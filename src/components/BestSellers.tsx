@@ -40,15 +40,15 @@ export default function BestSellers() {
   };
 
   return (
-    <section className="bg-[#FAFAFA] py-24 overflow-hidden">
-      <div className="max-w-[1440px] mx-auto px-6 mb-12">
+    <section className="bg-[#FAFAFA] py-16 md:py-24 overflow-hidden">
+      <div className="max-w-[1440px] mx-auto px-4 md:px-6 mb-8 md:mb-12">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-bold text-[#6E6E73] tracking-wider mb-2">
+            <p className="text-xs md:text-sm font-bold text-[#6E6E73] tracking-wider mb-2">
               03 / BEST SELLERS
             </p>
-            <h2 className="text-3xl md:text-4xl font-bold text-[#111]">
-              Most Loved Pieces
+            <h2 className="text-2xl md:text-4xl font-bold text-[#111]">
+              Most Loved
             </h2>
           </div>
           <div className="hidden md:flex gap-2">
@@ -75,7 +75,7 @@ export default function BestSellers() {
       </div>
 
       {/* Progress Line */}
-      <div className="max-w-[1440px] mx-auto px-6 mb-6">
+      <div className="max-w-[1440px] mx-auto px-4 md:px-6 mb-4 md:mb-6">
         <div className="h-[2px] bg-black/5 rounded-full overflow-hidden">
           <motion.div
             className="h-full bg-black rounded-full"
@@ -88,19 +88,19 @@ export default function BestSellers() {
       {/* Horizontal Scroll Container */}
       <div
         ref={scrollRef}
-        className="flex gap-6 overflow-x-auto scrollbar-hide px-6 pb-6 snap-x snap-mandatory"
+        className="flex gap-3 md:gap-6 overflow-x-auto scrollbar-hide px-4 md:px-6 pb-4 md:pb-6 snap-x snap-mandatory"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
-        <div className="shrink-0 w-[calc((100vw-1440px)/2)] hidden lg:block" />
+        <div className="shrink-0 w-2 md:w-[calc((100vw-1440px)/2)] hidden md:block" />
         {bestSellers.map((product, i) => (
           <div
             key={product.id}
-            className="shrink-0 w-[300px] md:w-[340px] snap-start"
+            className="shrink-0 w-[160px] sm:w-[200px] md:w-[280px] lg:w-[340px] snap-start"
           >
             <ProductCard product={product} index={i} />
           </div>
         ))}
-        <div className="shrink-0 w-[calc((100vw-1440px)/2)] hidden lg:block" />
+        <div className="shrink-0 w-2 md:w-[calc((100vw-1440px)/2)] hidden md:block" />
       </div>
     </section>
   );

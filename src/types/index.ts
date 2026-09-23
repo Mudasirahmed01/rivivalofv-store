@@ -20,7 +20,7 @@ export interface Product {
   gsmRating?: string;
   fabricDetails: string;
   images: ProductImage[];
-  category: "outerwear" | "tops" | "bottoms" | "accessories" | "fragrances";
+  category: "tops" | "bottoms";
   homepageSlot: "hero" | "new_release" | "bento_1" | "bento_2" | "bento_3" | "best_seller" | "none";
   variants: ProductVariant[];
   isPublished: boolean;

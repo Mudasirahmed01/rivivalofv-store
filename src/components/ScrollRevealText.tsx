@@ -15,10 +15,10 @@ export default function ScrollRevealText() {
   return (
     <div
       ref={containerRef}
-      className="min-h-[150vh] flex items-center justify-center bg-[#FAFAFA] px-6 py-32"
+      className="min-h-[120vh] md:min-h-[150vh] flex items-center justify-center bg-[#FAFAFA] px-4 md:px-6 py-20 md:py-32"
     >
       <div className="sticky top-1/2 -translate-y-1/2 max-w-5xl">
-        <p className="text-3xl md:text-5xl lg:text-6xl font-bold leading-tight flex flex-wrap gap-x-3 gap-y-3">
+        <p className="text-xl sm:text-3xl md:text-5xl lg:text-6xl font-bold leading-tight flex flex-wrap gap-x-2 gap-y-2 md:gap-x-3 md:gap-y-3">
           {words.map((word, i) => {
             const start = i / words.length;
             const end = start + 1 / words.length;

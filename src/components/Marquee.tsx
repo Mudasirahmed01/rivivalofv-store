@@ -11,13 +11,11 @@ const marqueeItems = [
   "★",
   "SUSTAINABLE FASHION",
   "★",
-  "HANDCRAFTED PRECISION",
-  "★",
 ];
 
 export default function Marquee() {
   return (
-    <div className="bg-black py-3 overflow-hidden">
+    <div className="bg-black py-2 md:py-3 overflow-hidden">
       <motion.div
         className="flex whitespace-nowrap"
         animate={{ x: ["0%", "-50%"] }}
@@ -26,7 +24,7 @@ export default function Marquee() {
         {[...marqueeItems, ...marqueeItems].map((item, i) => (
           <span
             key={i}
-            className="text-white/80 text-xs font-medium tracking-[0.2em] mx-6 uppercase"
+            className="text-white/80 text-[9px] md:text-xs font-medium tracking-[0.15em] md:tracking-[0.2em] mx-4 md:mx-6 uppercase"
           >
             {item}
           </span>

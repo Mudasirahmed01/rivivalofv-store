@@ -1,31 +1,23 @@
 import { motion } from "framer-motion";
+import { Instagram, Twitter, MessageCircle } from "lucide-react";
 
 const footerLinks = {
   shop: [
     { label: "New Releases", href: "#" },
     { label: "Best Sellers", href: "#" },
-    { label: "Outerwear", href: "#" },
-    { label: "Tops & Tees", href: "#" },
-    { label: "Fragrances", href: "#" },
-    { label: "Accessories", href: "#" },
+    { label: "Shirts & Tops", href: "#" },
+    { label: "Pants & Bottoms", href: "#" },
   ],
   support: [
     { label: "Shipping & Returns", href: "#" },
     { label: "Size Guide", href: "#" },
     { label: "Care Guide", href: "#" },
     { label: "Contact Us", href: "#" },
-    { label: "FAQ", href: "#" },
   ],
   legal: [
     { label: "Privacy Policy", href: "#" },
     { label: "Terms of Service", href: "#" },
     { label: "Cookie Policy", href: "#" },
-  ],
-  social: [
-    { label: "Instagram", href: "#" },
-    { label: "Twitter / X", href: "#" },
-    { label: "Discord", href: "#" },
-    { label: "TikTok", href: "#" },
   ],
 };
 
@@ -33,9 +25,9 @@ function FooterLink({ label, href }: { label: string; href: string }) {
   return (
     <motion.a
       href={href}
-      whileHover={{ x: 3 }}
-      transition={{ duration: 0.15 }}
-      className="text-[#6E6E73] hover:text-[#111] text-sm transition-colors duration-200 block py-1"
+      whileHover={{ x: 4 }}
+      transition={{ duration: 0.2 }}
+      className="text-white/50 hover:text-white text-xs md:text-sm transition-colors duration-200 block py-1.5"
     >
       {label}
     </motion.a>
@@ -44,26 +36,58 @@ function FooterLink({ label, href }: { label: string; href: string }) {
 
 export default function Footer() {
   return (
-    <footer className="bg-[#111] text-white py-16 px-6">
+    <footer className="bg-[#0A0A0A] text-white py-12 md:py-16 px-4 md:px-6">
       <div className="max-w-[1440px] mx-auto">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-16">
-          {/* Brand Column */}
-          <div className="col-span-2 md:col-span-1">
-            <h3 className="text-lg font-bold tracking-[0.15em] mb-3">
+        {/* Top Section - Brand + Newsletter */}
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 md:gap-8 pb-8 md:pb-12 border-b border-white/10">
+          <div>
+            <h3 className="text-lg md:text-2xl font-bold tracking-[0.15em] mb-2">
               REVIVAL OF 5
             </h3>
-            <p className="text-sm text-white/50 mb-4 leading-relaxed">
-              Premium apparel engineered for the modern era. High-density fabrics, zero compromises.
+            <p className="text-xs md:text-sm text-white/40 max-w-md leading-relaxed">
+              Engineering wearable precision. Premium apparel crafted for the modern era.
             </p>
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-              <span className="text-xs text-white/50">Systems Normal</span>
+          </div>
+          
+          {/* Newsletter */}
+          <div className="w-full lg:w-auto">
+            <p className="text-[10px] md:text-xs text-white/30 uppercase tracking-wider mb-2 md:mb-3">Join the movement</p>
+            <div className="flex w-full lg:w-80">
+              <input
+                type="email"
+                placeholder="Your email"
+                className="flex-1 px-3 md:px-4 py-2.5 md:py-3 bg-white/5 border border-white/10 rounded-l-xl text-xs md:text-sm text-white placeholder:text-white/30 outline-none focus:border-white/30 transition-colors"
+              />
+              <button className="px-4 md:px-5 py-2.5 md:py-3 bg-white text-black text-[10px] md:text-xs font-bold tracking-wider rounded-r-xl hover:bg-white/90 transition-colors">
+                JOIN
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Links Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 py-8 md:py-12">
+          {/* Brand Column */}
+          <div className="col-span-2 md:col-span-1">
+            <h4 className="text-[10px] md:text-xs font-bold text-white/30 uppercase tracking-[0.2em] mb-4 md:mb-5">
+              Brand
+            </h4>
+            <div className="space-y-0">
+              <FooterLink label="Our Story" href="#" />
+              <FooterLink label="Sustainability" href="#" />
+              <FooterLink label="Careers" href="#" />
+              <FooterLink label="Press" href="#" />
+            </div>
+            {/* Status */}
+            <div className="flex items-center gap-2 mt-4 md:mt-6">
+              <span className="w-1.5 h-1.5 md:w-2 md:h-2 bg-green-400 rounded-full animate-pulse" />
+              <span className="text-[10px] md:text-xs text-white/30">All Systems Normal</span>
             </div>
           </div>
 
           {/* Shop Column */}
           <div>
-            <h4 className="text-sm font-bold text-white mb-4 uppercase tracking-wider">
+            <h4 className="text-[10px] md:text-xs font-bold text-white/30 uppercase tracking-[0.2em] mb-4 md:mb-5">
               Shop
             </h4>
             <div className="space-y-0">
@@ -75,7 +99,7 @@ export default function Footer() {
 
           {/* Support Column */}
           <div>
-            <h4 className="text-sm font-bold text-white mb-4 uppercase tracking-wider">
+            <h4 className="text-[10px] md:text-xs font-bold text-white/30 uppercase tracking-[0.2em] mb-4 md:mb-5">
               Support
             </h4>
             <div className="space-y-0">
@@ -85,60 +109,45 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Legal Column */}
+          {/* Legal + Social Column */}
           <div>
-            <h4 className="text-sm font-bold text-white mb-4 uppercase tracking-wider">
+            <h4 className="text-[10px] md:text-xs font-bold text-white/30 uppercase tracking-[0.2em] mb-4 md:mb-5">
               Legal
             </h4>
-            <div className="space-y-0">
+            <div className="space-y-0 mb-4 md:mb-6">
               {footerLinks.legal.map((link) => (
                 <FooterLink key={link.label} label={link.label} href={link.href} />
               ))}
             </div>
-          </div>
-
-          {/* Connect Column */}
-          <div>
-            <h4 className="text-sm font-bold text-white mb-4 uppercase tracking-wider">
-              Connect
+            
+            <h4 className="text-[10px] md:text-xs font-bold text-white/30 uppercase tracking-[0.2em] mb-3 md:mb-4">
+              Follow
             </h4>
-            <div className="space-y-0">
-              {footerLinks.social.map((link) => (
-                <FooterLink key={link.label} label={link.label} href={link.href} />
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Newsletter */}
-        <div className="border-t border-white/10 pt-8 mb-8">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <div>
-              <h4 className="text-sm font-bold text-white mb-1">Stay in the loop</h4>
-              <p className="text-xs text-white/50">Get notified about new drops and exclusive offers.</p>
-            </div>
-            <div className="flex w-full md:w-auto">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="flex-1 md:w-64 px-4 py-3 bg-white/5 border border-white/10 rounded-l-full text-sm text-white placeholder:text-white/30 outline-none focus:border-white/30 transition-colors"
-              />
-              <button className="px-6 py-3 bg-white text-black text-sm font-semibold rounded-r-full hover:bg-white/90 transition-colors">
-                Subscribe
-              </button>
+            <div className="flex gap-2 md:gap-3">
+              <a href="#" className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-white/5 hover:bg-white/15 flex items-center justify-center transition-colors">
+                <Instagram size={14} className="text-white/60 md:hidden" />
+                <Instagram size={16} className="text-white/60 hidden md:block" />
+              </a>
+              <a href="#" className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-white/5 hover:bg-white/15 flex items-center justify-center transition-colors">
+                <Twitter size={14} className="text-white/60 md:hidden" />
+                <Twitter size={16} className="text-white/60 hidden md:block" />
+              </a>
+              <a href="#" className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-white/5 hover:bg-white/15 flex items-center justify-center transition-colors">
+                <MessageCircle size={14} className="text-white/60 md:hidden" />
+                <MessageCircle size={16} className="text-white/60 hidden md:block" />
+              </a>
             </div>
           </div>
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-white/10 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-white/40">
-            © 2026 REVIVAL OF 5. ALL RIGHTS RESERVED.
+        <div className="border-t border-white/10 pt-6 md:pt-8 flex flex-col md:flex-row items-center justify-between gap-3 md:gap-4">
+          <p className="text-[10px] md:text-xs text-white/25 text-center md:text-left">
+            © 2026 REVIVAL OF 5. All rights reserved.
           </p>
-          <div className="flex items-center gap-4">
-            <span className="text-xs text-white/40">USD $</span>
-            <span className="text-xs text-white/20">|</span>
-            <span className="text-xs text-white/40">English</span>
+          <div className="flex items-center gap-4 md:gap-6">
+            <span className="text-[10px] md:text-xs text-white/25 cursor-pointer hover:text-white/50 transition-colors">USD $</span>
+            <span className="text-[10px] md:text-xs text-white/25 cursor-pointer hover:text-white/50 transition-colors">English</span>
           </div>
         </div>
       </div>
