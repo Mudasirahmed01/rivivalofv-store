@@ -13,6 +13,7 @@ type CheckoutStep = "info" | "shipping" | "payment" | "success";
 export default function CheckoutPage({ onBack }: CheckoutPageProps) {
   const { items, updateQuantity, removeItem, getTotalPrice, clearCart } = useCartStore();
   const [step, setStep] = useState<CheckoutStep>("info");
+  const [orderTotal, setOrderTotal] = useState(0);
   const [formData, setFormData] = useState({
     email: "",
     firstName: "",
@@ -41,8 +42,13 @@ export default function CheckoutPage({ onBack }: CheckoutPageProps) {
   };
 
   const handlePlaceOrder = () => {
+    // Save the total before clearing cart
+    setOrderTotal(total);
     setStep("success");
-    clearCart();
+    // Clear cart after a small delay to ensure success page renders with correct total
+    setTimeout(() => {
+      clearCart();
+    }, 100);
   };
 
   const isInfoValid = formData.email && formData.firstName && formData.lastName && formData.phone;
@@ -95,7 +101,7 @@ export default function CheckoutPage({ onBack }: CheckoutPageProps) {
           </p>
           <div className="p-4 bg-white rounded-xl border border-black/5 mb-6 text-left">
             <p className="text-xs text-[#6E6E73] mb-1">Total Amount</p>
-            <p className="text-2xl font-bold text-[#111]">{formatPKR(total)}</p>
+            <p className="text-2xl font-bold text-[#111]">{formatPKR(orderTotal)}</p>
           </div>
           <button
             onClick={onBack}
