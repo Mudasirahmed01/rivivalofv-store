@@ -27,13 +27,15 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import ThemeToggle from "./components/ThemeToggle";
 import LiveChat from "./components/LiveChat";
 import SocialProof from "./components/SocialProof";
+import AuthPage from "./components/AuthPage";
+import AdminDashboard from "./components/AdminDashboard";
 import SmoothScroll from "./components/SmoothScroll";
 import { Product } from "./types";
 import { products } from "./data/products";
 import { getProductSlugFromUrl, clearProductHash } from "./lib/shareUtils";
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState<"home" | "account" | "all-products" | "product-detail" | "checkout" | "wishlist" | "shipping" | "terms" | "privacy" | "contact">("home");
+  const [currentPage, setCurrentPage] = useState<"home" | "account" | "all-products" | "product-detail" | "checkout" | "wishlist" | "shipping" | "terms" | "privacy" | "contact" | "auth" | "admin">("home");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   // Check URL hash on mount and when it changes
@@ -146,6 +148,17 @@ export default function App() {
 
       {currentPage === "contact" && (
         <ContactPage onBack={handleBackToHome} />
+      )}
+
+      {currentPage === "auth" && (
+        <AuthPage 
+          onBack={handleBackToHome} 
+          onLoginSuccess={() => setCurrentPage("account")}
+        />
+      )}
+
+      {currentPage === "admin" && (
+        <AdminDashboard onBack={handleBackToHome} />
       )}
 
       <Footer onNavigate={setCurrentPage} />
