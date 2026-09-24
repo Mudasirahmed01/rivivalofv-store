@@ -2,7 +2,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Minus, Plus, ShoppingBag } from "lucide-react";
 import { useCartStore } from "../store/cartStore";
 
-export default function CartDrawer() {
+interface CartDrawerProps {
+  onCheckout?: () => void;
+}
+
+export default function CartDrawer({ onCheckout }: CartDrawerProps) {
   const { items, isOpen, closeCart, removeItem, updateQuantity, getTotalPrice } = useCartStore();
   const totalPrice = getTotalPrice();
 
@@ -154,6 +158,10 @@ export default function CartDrawer() {
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
+                  onClick={() => {
+                    closeCart();
+                    onCheckout?.();
+                  }}
                   className="w-full py-3.5 md:py-4 bg-black text-white rounded-full font-semibold text-xs md:text-sm tracking-wider hover:bg-black/90 transition-colors"
                 >
                   CHECKOUT — ${totalPrice.toFixed(2)}

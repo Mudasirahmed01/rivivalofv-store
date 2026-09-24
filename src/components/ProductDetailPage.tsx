@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Minus, Plus, ShoppingBag, Heart, Share2, Truck, Shield, RotateCcw } from "lucide-react";
+import { ArrowLeft, Minus, Plus, ShoppingBag, Share2, Truck, Shield, RotateCcw, Check, Link2 } from "lucide-react";
 import { Product } from "../types";
 import { useCartStore } from "../store/cartStore";
 import { products } from "../data/products";
 import ProductCard from "./ProductCard";
+import SizeGuide from "./SizeGuide";
 
 interface ProductDetailPageProps {
   product: Product;
@@ -16,7 +17,9 @@ export default function ProductDetailPage({ product, onBack, onProductClick }: P
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
-  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
+  const [addedToCart, setAddedToCart] = useState(false);
+  const [shareSuccess, setShareSuccess] = useState(false);
   const { addItem, openCart } = useCartStore();
 
   const handleAddToCart = () => {
@@ -24,7 +27,47 @@ export default function ProductDetailPage({ product, onBack, onProductClick }: P
       for (let i = 0; i < quantity; i++) {
         addItem(product, selectedSize);
       }
-      openCart();
+      setAddedToCart(true);
+      setTimeout(() => {
+        openCart();
+        setAddedToCart(false);
+      }, 800);
+    }
+  };
+
+  const handleShare = async () => {
+    const shareData = {
+      title: product.title,
+      text: `Check out ${product.title} — $${product.price} at REVIVAL OF 5`,
+      url: window.location.href,
+    };
+
+    // Try Web Share API first (mobile native share)
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+        setShareSuccess(true);
+        setTimeout(() => setShareSuccess(false), 2000);
+      } catch (err) {
+        // User cancelled, do nothing
+      }
+    } else {
+      // Fallback: copy link to clipboard
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        setShareSuccess(true);
+        setTimeout(() => setShareSuccess(false), 2000);
+      } catch (err) {
+        // Fallback for older browsers
+        const input = document.createElement("input");
+        input.value = window.location.href;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand("copy");
+        document.body.removeChild(input);
+        setShareSuccess(true);
+        setTimeout(() => setShareSuccess(false), 2000);
+      }
     }
   };
 
@@ -73,6 +116,30 @@ export default function ProductDetailPage({ product, onBack, onProductClick }: P
                   </span>
                 </div>
               )}
+
+              {/* Share Button - Top Right */}
+              <div className="absolute top-4 right-4">
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={handleShare}
+                  className={`w-10 h-10 md:w-11 md:h-11 rounded-full flex items-center justify-center transition-all duration-300 ${
+                    shareSuccess
+                      ? "bg-green-500 text-white"
+                      : "bg-white/90 backdrop-blur-sm text-[#111] hover:bg-white"
+                  }`}
+                >
+                  {shareSuccess ? <Check size={16} /> : <Share2 size={16} />}
+                </motion.button>
+                {shareSuccess && (
+                  <motion.p
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="absolute -bottom-7 right-0 text-[10px] text-green-600 font-semibold whitespace-nowrap"
+                  >
+                    Link copied!
+                  </motion.p>
+                )}
+              </div>
             </div>
 
             {/* Thumbnail Gallery */}
@@ -159,7 +226,10 @@ export default function ProductDetailPage({ product, onBack, onProductClick }: P
                 <h3 className="text-xs font-bold text-[#111] uppercase tracking-wider">
                   Select Size
                 </h3>
-                <button className="text-xs text-[#6E6E73] hover:text-[#111] underline transition-colors">
+                <button
+                  onClick={() => setSizeGuideOpen(true)}
+                  className="text-xs text-[#6E6E73] hover:text-[#111] underline underline-offset-2 transition-colors"
+                >
                   Size Guide
                 </button>
               </div>
@@ -202,35 +272,43 @@ export default function ProductDetailPage({ product, onBack, onProductClick }: P
               </div>
             </div>
 
-            {/* Action Buttons */}
+            {/* Action Buttons - Only Add to Bag + Share (no heart) */}
             <div className="flex gap-3 mb-8">
               <motion.button
                 whileTap={{ scale: 0.97 }}
                 onClick={handleAddToCart}
                 disabled={!selectedSize}
                 className={`flex-1 py-4 font-bold text-sm tracking-wider flex items-center justify-center gap-2 transition-all duration-300 ${
-                  selectedSize
+                  addedToCart
+                    ? "bg-green-500 text-white"
+                    : selectedSize
                     ? "bg-black text-white hover:bg-black/90"
                     : "bg-black/20 text-white/60 cursor-not-allowed"
                 }`}
               >
-                <ShoppingBag size={16} />
-                {selectedSize ? "ADD TO BAG" : "SELECT A SIZE"}
+                {addedToCart ? (
+                  <>
+                    <Check size={16} />
+                    ADDED!
+                  </>
+                ) : (
+                  <>
+                    <ShoppingBag size={16} />
+                    {selectedSize ? "ADD TO BAG" : "SELECT A SIZE"}
+                  </>
+                )}
               </motion.button>
               <motion.button
                 whileTap={{ scale: 0.9 }}
-                onClick={() => setIsWishlisted(!isWishlisted)}
+                onClick={handleShare}
                 className={`w-14 h-14 border flex items-center justify-center transition-all duration-300 ${
-                  isWishlisted
-                    ? "bg-red-500 border-red-500 text-white"
+                  shareSuccess
+                    ? "bg-green-500 border-green-500 text-white"
                     : "border-black/10 text-[#111] hover:border-black"
                 }`}
               >
-                <Heart size={18} fill={isWishlisted ? "white" : "none"} />
+                {shareSuccess ? <Check size={18} /> : <Share2 size={18} />}
               </motion.button>
-              <button className="w-14 h-14 border border-black/10 flex items-center justify-center hover:border-black transition-colors">
-                <Share2 size={18} />
-              </button>
             </div>
 
             {/* Features */}
@@ -271,6 +349,13 @@ export default function ProductDetailPage({ product, onBack, onProductClick }: P
           </div>
         )}
       </div>
+
+      {/* Size Guide Modal */}
+      <SizeGuide
+        isOpen={sizeGuideOpen}
+        onClose={() => setSizeGuideOpen(false)}
+        category={product.category as "tops" | "bottoms"}
+      />
     </div>
   );
 }

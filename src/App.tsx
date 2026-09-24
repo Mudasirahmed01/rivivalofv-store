@@ -11,13 +11,14 @@ import FeaturedProducts from "./components/FeaturedProducts";
 import AllProductsPage from "./components/AllProductsPage";
 import ProductDetailPage from "./components/ProductDetailPage";
 import CartDrawer from "./components/CartDrawer";
+import CheckoutPage from "./components/CheckoutPage";
 import Footer from "./components/Footer";
 import BackToTop from "./components/BackToTop";
 import AccountPage from "./components/AccountPage";
 import { Product } from "./types";
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState<"home" | "account" | "all-products" | "product-detail">("home");
+  const [currentPage, setCurrentPage] = useState<"home" | "account" | "all-products" | "product-detail" | "checkout">("home");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   const handleBackToHome = () => {
@@ -36,10 +37,15 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const handleGoToCheckout = () => {
+    setCurrentPage("checkout");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   return (
     <div className="min-h-screen bg-[#FAFAFA] font-sans antialiased">
       <Header onAccountClick={() => setCurrentPage("account")} />
-      <CartDrawer />
+      <CartDrawer onCheckout={handleGoToCheckout} />
       <BackToTop />
       
       {currentPage === "home" && (
@@ -69,6 +75,10 @@ export default function App() {
           onBack={handleBackToHome}
           onProductClick={handleProductClick}
         />
+      )}
+
+      {currentPage === "checkout" && (
+        <CheckoutPage onBack={handleBackToHome} />
       )}
 
       <Footer />
