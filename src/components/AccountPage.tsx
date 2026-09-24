@@ -57,7 +57,7 @@ export default function AccountPage({ onBack }: AccountPageProps) {
                 {isSignUp ? "Create Account" : "Welcome Back"}
               </h1>
               <p className="text-sm text-[#6E6E73]">
-                {isSignUp ? "Join the Revival of 5 community" : "Sign in to your account"}
+                {isSignUp ? "Join the Revival of V community" : "Sign in to your account"}
               </p>
             </div>
 

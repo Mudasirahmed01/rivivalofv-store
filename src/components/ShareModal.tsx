@@ -15,7 +15,7 @@ interface ShareModalProps {
 export default function ShareModal({ isOpen, onClose, productTitle, productSlug, productPrice }: ShareModalProps) {
   const [copied, setCopied] = useState(false);
   const shareUrl = getProductShareUrl(productSlug);
-  const shareText = `Check out ${productTitle} — ${formatPKR(productPrice)} at REVIVAL OF 5`;
+  const shareText = `Check out ${productTitle} — ${formatPKR(productPrice)} at REVIVAL OF V`;
 
   const handleCopyLink = async () => {
     try {

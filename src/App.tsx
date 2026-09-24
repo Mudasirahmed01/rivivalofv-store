@@ -17,13 +17,16 @@ import RecentlyViewed from "./components/RecentlyViewed";
 import Footer from "./components/Footer";
 import BackToTop from "./components/BackToTop";
 import AccountPage from "./components/AccountPage";
+import ShippingReturns from "./components/ShippingReturns";
+import TermsPage from "./components/TermsPage";
+import PrivacyPage from "./components/PrivacyPage";
 import SmoothScroll from "./components/SmoothScroll";
 import { Product } from "./types";
 import { products } from "./data/products";
 import { getProductSlugFromUrl, clearProductHash } from "./lib/shareUtils";
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState<"home" | "account" | "all-products" | "product-detail" | "checkout" | "wishlist">("home");
+  const [currentPage, setCurrentPage] = useState<"home" | "account" | "all-products" | "product-detail" | "checkout" | "wishlist" | "shipping" | "terms" | "privacy">("home");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   // Check URL hash on mount and when it changes
@@ -120,7 +123,19 @@ export default function App() {
         <WishlistPage onBack={handleBackToHome} onProductClick={handleProductClick} />
       )}
 
-      <Footer />
+      {currentPage === "shipping" && (
+        <ShippingReturns onBack={handleBackToHome} />
+      )}
+
+      {currentPage === "terms" && (
+        <TermsPage onBack={handleBackToHome} />
+      )}
+
+      {currentPage === "privacy" && (
+        <PrivacyPage onBack={handleBackToHome} />
+      )}
+
+      <Footer onNavigate={setCurrentPage} />
     </div>
     </SmoothScroll>
   );

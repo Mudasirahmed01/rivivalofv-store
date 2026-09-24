@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 
-const brandText = "We do not design apparel for a single season. Revival of 5 builds architectural silhouettes designed to endure time, movement, and perception.";
+const brandText = "We do not design apparel for a single season. Revival of V builds architectural silhouettes designed to endure time, movement, and perception.";
 
 export default function ScrollRevealText() {
   const containerRef = useRef<HTMLDivElement>(null);

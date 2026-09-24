@@ -82,7 +82,7 @@ export default function Header({ onAccountClick, onWishlistClick }: HeaderProps)
               <div className="md:hidden h-8 w-8 relative">
                 <img
                   src="https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=100&h=100&fit=crop&crop=center"
-                  alt="REVIVAL OF 5"
+                  alt="REVIVAL OF V"
                   className="w-full h-full object-cover rounded-full"
                 />
                 <div className="absolute inset-0 rounded-full border border-black/10" />
@@ -90,7 +90,7 @@ export default function Header({ onAccountClick, onWishlistClick }: HeaderProps)
               
               {/* Desktop Logo - Text */}
               <span className="hidden md:block text-[#111] font-bold text-lg tracking-[0.15em] hover:opacity-70 transition-opacity">
-                REVIVAL OF 5
+                REVIVAL OF V
               </span>
             </a>
           </div>
@@ -168,12 +168,12 @@ export default function Header({ onAccountClick, onWishlistClick }: HeaderProps)
                   <div className="md:hidden h-8 w-8 relative">
                     <img
                       src="https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=100&h=100&fit=crop&crop=center"
-                      alt="REVIVAL OF 5"
+                      alt="REVIVAL OF V"
                       className="w-full h-full object-cover rounded-full"
                     />
                   </div>
                   <span className="hidden md:block text-[#111] font-bold text-lg tracking-[0.15em]">
-                    REVIVAL OF 5
+                    REVIVAL OF V
                   </span>
                 </div>
                 <button
@@ -201,18 +201,6 @@ export default function Header({ onAccountClick, onWishlistClick }: HeaderProps)
                   ))}
                 </nav>
                 <div className="flex flex-col justify-end pb-8 md:pb-12 gap-3 text-xs md:text-sm text-[#6E6E73]">
-                  <p className="font-semibold text-[#111] text-sm md:text-base">Customer Service</p>
-                  <p className="hover:text-[#111] cursor-pointer transition-colors">Shipping & Returns</p>
-                  <p 
-                    className="hover:text-[#111] cursor-pointer transition-colors"
-                    onClick={() => {
-                      setMenuOpen(false);
-                      setSizeGuideOpen(true);
-                    }}
-                  >
-                    Size Guide
-                  </p>
-                  <p className="hover:text-[#111] cursor-pointer transition-colors">Contact Us</p>
                   <div className="mt-3 flex gap-4">
                     <span className="cursor-pointer hover:text-[#111] transition-colors">Instagram</span>
                     <span className="cursor-pointer hover:text-[#111] transition-colors">Twitter</span>

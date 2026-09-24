@@ -278,7 +278,7 @@ export const categories = [
 export const heroSlides = [
   {
     id: 1,
-    preTitle: "REVIVAL OF 5 // COLLECTION 01",
+    preTitle: "REVIVAL OF V // COLLECTION 01",
     headline: "ENGINEERING WEARABLE PRECISION.",
     subheadline: "Crafted for the modern era. High-density fabrics, zero compromises.",
     cta: "EXPLORE COLLECTION",
@@ -286,7 +286,7 @@ export const heroSlides = [
   },
   {
     id: 2,
-    preTitle: "REVIVAL OF 5 // COLLECTION 02",
+    preTitle: "REVIVAL OF V // COLLECTION 02",
     headline: "ARCHITECTURE YOU CAN WEAR.",
     subheadline: "Silhouettes designed to endure time, movement, and perception.",
     cta: "SHOP NEW ARRIVALS",
@@ -294,7 +294,7 @@ export const heroSlides = [
   },
   {
     id: 3,
-    preTitle: "REVIVAL OF 5 // NEW ARRIVALS",
+    preTitle: "REVIVAL OF V // NEW ARRIVALS",
     headline: "THE FUTURE IS NOW.",
     subheadline: "New season drops. Limited quantities. Uncompromising quality.",
     cta: "VIEW NEW RELEASES",

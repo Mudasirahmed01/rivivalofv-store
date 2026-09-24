@@ -34,7 +34,7 @@ export default function EmailConfirmation({ email, orderNumber, totalAmount, ite
               <span className="text-white text-[10px] font-bold">R5</span>
             </div>
             <div>
-              <p className="text-xs font-bold text-[#111]">REVIVAL OF 5</p>
+              <p className="text-xs font-bold text-[#111]">REVIVAL OF V</p>
               <p className="text-[10px] text-[#6E6E73]">Order Confirmation</p>
             </div>
           </div>

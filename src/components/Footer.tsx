@@ -1,6 +1,10 @@
 import { motion } from "framer-motion";
 import { Instagram, Twitter, MessageCircle } from "lucide-react";
 
+interface FooterProps {
+  onNavigate?: (page: "shipping" | "terms" | "privacy") => void;
+}
+
 const footerLinks = {
   shop: [
     { label: "New Releases", href: "#" },
@@ -9,22 +13,23 @@ const footerLinks = {
     { label: "Pants & Bottoms", href: "#" },
   ],
   support: [
-    { label: "Shipping & Returns", href: "#" },
+    { label: "Shipping & Returns", href: "#", page: "shipping" as const },
     { label: "Size Guide", href: "#" },
     { label: "Care Guide", href: "#" },
     { label: "Contact Us", href: "#" },
   ],
   legal: [
-    { label: "Privacy Policy", href: "#" },
-    { label: "Terms of Service", href: "#" },
+    { label: "Privacy Policy", href: "#", page: "privacy" as const },
+    { label: "Terms of Service", href: "#", page: "terms" as const },
     { label: "Cookie Policy", href: "#" },
   ],
 };
 
-function FooterLink({ label, href }: { label: string; href: string }) {
+function FooterLink({ label, href, onClick }: { label: string; href: string; onClick?: (e: React.MouseEvent) => void }) {
   return (
     <motion.a
       href={href}
+      onClick={onClick}
       whileHover={{ x: 4 }}
       transition={{ duration: 0.2 }}
       className="text-white/50 hover:text-white text-xs md:text-sm transition-colors duration-200 block py-1.5"
@@ -34,7 +39,13 @@ function FooterLink({ label, href }: { label: string; href: string }) {
   );
 }
 
-export default function Footer() {
+export default function Footer({ onNavigate }: FooterProps) {
+  const handleLinkClick = (e: React.MouseEvent, page: "shipping" | "terms" | "privacy") => {
+    e.preventDefault();
+    onNavigate?.(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   return (
     <footer className="bg-[#0A0A0A] text-white py-12 md:py-16 px-4 md:px-6">
       <div className="max-w-[1440px] mx-auto">
@@ -42,7 +53,7 @@ export default function Footer() {
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 md:gap-8 pb-8 md:pb-12 border-b border-white/10">
           <div>
             <h3 className="text-lg md:text-2xl font-bold tracking-[0.15em] mb-2">
-              REVIVAL OF 5
+              REVIVAL OF V
             </h3>
             <p className="text-xs md:text-sm text-white/40 max-w-md leading-relaxed">
               Engineering wearable precision. Premium apparel crafted for the modern era.
@@ -104,7 +115,12 @@ export default function Footer() {
             </h4>
             <div className="space-y-0">
               {footerLinks.support.map((link) => (
-                <FooterLink key={link.label} label={link.label} href={link.href} />
+                <FooterLink 
+                  key={link.label} 
+                  label={link.label} 
+                  href={link.href} 
+                  onClick={'page' in link && link.page ? (e) => handleLinkClick(e, link.page!) : undefined}
+                />
               ))}
             </div>
           </div>
@@ -116,7 +132,12 @@ export default function Footer() {
             </h4>
             <div className="space-y-0 mb-4 md:mb-6">
               {footerLinks.legal.map((link) => (
-                <FooterLink key={link.label} label={link.label} href={link.href} />
+                <FooterLink 
+                  key={link.label} 
+                  label={link.label} 
+                  href={link.href} 
+                  onClick={'page' in link && link.page ? (e) => handleLinkClick(e, link.page!) : undefined}
+                />
               ))}
             </div>
             
@@ -143,7 +164,7 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="border-t border-white/10 pt-6 md:pt-8 flex flex-col md:flex-row items-center justify-between gap-3 md:gap-4">
           <p className="text-[10px] md:text-xs text-white/25 text-center md:text-left">
-            © 2026 REVIVAL OF 5. All rights reserved.
+            © 2026 REVIVAL OF V. All rights reserved.
           </p>
           <div className="flex items-center gap-4 md:gap-6">
             <span className="text-[10px] md:text-xs text-white/25 cursor-pointer hover:text-white/50 transition-colors">PKR Rs</span>
