@@ -4,6 +4,7 @@ import { ShoppingBag, Search, User, X, Heart } from "lucide-react";
 import { useCartStore } from "../store/cartStore";
 import { useWishlistStore } from "../store/wishlistStore";
 import AdvancedSearch from "./AdvancedSearch";
+import SizeGuide from "./SizeGuide";
 import { Product } from "../types";
 
 interface HeaderProps {
@@ -15,6 +16,7 @@ export default function Header({ onAccountClick, onWishlistClick }: HeaderProps)
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
   const { toggleCart, getTotalItems } = useCartStore();
   const { items: wishlistItems } = useWishlistStore();
   const totalItems = getTotalItems();
@@ -47,7 +49,6 @@ export default function Header({ onAccountClick, onWishlistClick }: HeaderProps)
     "BEST SELLERS",
     "SHIRTS",
     "PANTS",
-    "SIZE GUIDE",
   ];
 
   return (
@@ -202,7 +203,15 @@ export default function Header({ onAccountClick, onWishlistClick }: HeaderProps)
                 <div className="flex flex-col justify-end pb-8 md:pb-12 gap-3 text-xs md:text-sm text-[#6E6E73]">
                   <p className="font-semibold text-[#111] text-sm md:text-base">Customer Service</p>
                   <p className="hover:text-[#111] cursor-pointer transition-colors">Shipping & Returns</p>
-                  <p className="hover:text-[#111] cursor-pointer transition-colors">Size Guide</p>
+                  <p 
+                    className="hover:text-[#111] cursor-pointer transition-colors"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      setSizeGuideOpen(true);
+                    }}
+                  >
+                    Size Guide
+                  </p>
                   <p className="hover:text-[#111] cursor-pointer transition-colors">Contact Us</p>
                   <div className="mt-3 flex gap-4">
                     <span className="cursor-pointer hover:text-[#111] transition-colors">Instagram</span>
@@ -221,6 +230,13 @@ export default function Header({ onAccountClick, onWishlistClick }: HeaderProps)
         isOpen={searchOpen}
         onClose={() => setSearchOpen(false)}
         onProductClick={handleProductClickFromSearch}
+      />
+
+      {/* Size Guide Modal */}
+      <SizeGuide
+        isOpen={sizeGuideOpen}
+        onClose={() => setSizeGuideOpen(false)}
+        category="tops"
       />
     </>
   );
