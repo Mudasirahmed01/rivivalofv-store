@@ -8,36 +8,77 @@ interface SizeGuideProps {
   category?: "tops" | "bottoms";
 }
 
-interface TopSize {
-  size: string;
-  chest: string;
-  length: string;
-  shoulder: string;
-  sleeve: string;
-}
+// Real size charts based on industry standards
 
-interface BottomSize {
-  size: string;
-  waist: string;
-  hip: string;
-  inseam: string;
-  rise: string;
-}
-
-const menTopsSizes: TopSize[] = [
-  { size: "S", chest: "35-37", length: "27", shoulder: "17", sleeve: "24" },
-  { size: "M", chest: "38-40", length: "28", shoulder: "18", sleeve: "25" },
-  { size: "L", chest: "41-43", length: "29", shoulder: "19", sleeve: "25.5" },
-  { size: "XL", chest: "44-46", length: "30", shoulder: "20", sleeve: "26" },
-  { size: "XXL", chest: "47-49", length: "31", shoulder: "21", sleeve: "26.5" },
+// SHIRTS
+const tshirtSizes = [
+  { size: "S", chest: "36-38", length: "27", shoulder: "17", sleeve: "8" },
+  { size: "M", chest: "39-41", length: "28", shoulder: "18", sleeve: "8.5" },
+  { size: "L", chest: "42-44", length: "29", shoulder: "19", sleeve: "9" },
+  { size: "XL", chest: "45-47", length: "30", shoulder: "20", sleeve: "9.5" },
+  { size: "XXL", chest: "48-50", length: "31", shoulder: "21", sleeve: "10" },
 ];
 
-const menBottomsSizes: BottomSize[] = [
-  { size: "S", waist: "28-30", hip: "35-37", inseam: "30", rise: "10" },
-  { size: "M", waist: "31-33", hip: "38-40", inseam: "31", rise: "10.5" },
-  { size: "L", waist: "34-36", hip: "41-43", inseam: "32", rise: "11" },
-  { size: "XL", waist: "37-39", hip: "44-46", inseam: "32", rise: "11.5" },
-  { size: "XXL", waist: "40-42", hip: "47-49", inseam: "33", rise: "12" },
+const hoodieSizes = [
+  { size: "S", chest: "40-42", length: "27.5", shoulder: "22", sleeve: "24" },
+  { size: "M", chest: "43-45", length: "28.5", shoulder: "23", sleeve: "25" },
+  { size: "L", chest: "46-48", length: "29.5", shoulder: "24", sleeve: "25.5" },
+  { size: "XL", chest: "49-51", length: "30.5", shoulder: "25", sleeve: "26" },
+  { size: "XXL", chest: "52-54", length: "31.5", shoulder: "26", sleeve: "26.5" },
+];
+
+const crewneckSizes = [
+  { size: "S", chest: "38-40", length: "26", shoulder: "18", sleeve: "24" },
+  { size: "M", chest: "41-43", length: "27", shoulder: "19", sleeve: "25" },
+  { size: "L", chest: "44-46", length: "28", shoulder: "20", sleeve: "25.5" },
+  { size: "XL", chest: "47-49", length: "29", shoulder: "21", sleeve: "26" },
+  { size: "XXL", chest: "50-52", length: "30", shoulder: "22", sleeve: "26.5" },
+];
+
+// PANTS
+const cargoPantsSizes = [
+  { size: "S", waist: "28-30", hip: "36-38", inseam: "30", rise: "11", legOpening: "16" },
+  { size: "M", waist: "31-33", hip: "39-41", inseam: "31", rise: "11.5", legOpening: "16.5" },
+  { size: "L", waist: "34-36", hip: "42-44", inseam: "32", rise: "12", legOpening: "17" },
+  { size: "XL", waist: "37-39", hip: "45-47", inseam: "32", rise: "12.5", legOpening: "17.5" },
+  { size: "XXL", waist: "40-42", hip: "48-50", inseam: "33", rise: "13", legOpening: "18" },
+];
+
+const jeansSizes = [
+  { size: "S", waist: "28-30", hip: "35-37", inseam: "32", rise: "10", legOpening: "14" },
+  { size: "M", waist: "31-33", hip: "38-40", inseam: "32", rise: "10.5", legOpening: "14.5" },
+  { size: "L", waist: "34-36", hip: "41-43", inseam: "32", rise: "11", legOpening: "15" },
+  { size: "XL", waist: "37-39", hip: "44-46", inseam: "32", rise: "11.5", legOpening: "15.5" },
+  { size: "XXL", waist: "40-42", hip: "47-49", inseam: "32", rise: "12", legOpening: "16" },
+];
+
+const joggerSizes = [
+  { size: "S", waist: "28-30", hip: "36-38", inseam: "28", rise: "10.5", legOpening: "10" },
+  { size: "M", waist: "31-33", hip: "39-41", inseam: "29", rise: "11", legOpening: "10.5" },
+  { size: "L", waist: "34-36", hip: "42-44", inseam: "30", rise: "11.5", legOpening: "11" },
+  { size: "XL", waist: "37-39", hip: "45-47", inseam: "30", rise: "12", legOpening: "11.5" },
+  { size: "XXL", waist: "40-42", hip: "48-50", inseam: "31", rise: "12.5", legOpening: "12" },
+];
+
+const trouserSizes = [
+  { size: "S", waist: "28-30", hip: "36-38", inseam: "31", rise: "11", legOpening: "18" },
+  { size: "M", waist: "31-33", hip: "39-41", inseam: "32", rise: "11.5", legOpening: "18.5" },
+  { size: "L", waist: "34-36", hip: "42-44", inseam: "32", rise: "12", legOpening: "19" },
+  { size: "XL", waist: "37-39", hip: "45-47", inseam: "33", rise: "12.5", legOpening: "19.5" },
+  { size: "XXL", waist: "40-42", hip: "48-50", inseam: "33", rise: "13", legOpening: "20" },
+];
+
+const shirtTypes = [
+  { id: "tshirt", label: "T-Shirts", data: tshirtSizes, description: "Regular Fit" },
+  { id: "hoodie", label: "Hoodies", data: hoodieSizes, description: "Oversized Fit" },
+  { id: "crewneck", label: "Crewnecks", data: crewneckSizes, description: "Relaxed Fit" },
+];
+
+const pantTypes = [
+  { id: "cargo", label: "Cargo Pants", data: cargoPantsSizes, description: "Relaxed Fit" },
+  { id: "jeans", label: "Jeans", data: jeansSizes, description: "Slim Fit" },
+  { id: "jogger", label: "Joggers", data: joggerSizes, description: "Tapered Fit" },
+  { id: "trouser", label: "Trousers", data: trouserSizes, description: "Wide Leg" },
 ];
 
 const howToMeasure = [
@@ -66,6 +107,8 @@ const howToMeasure = [
 export default function SizeGuide({ isOpen, onClose, category = "tops" }: SizeGuideProps) {
   const [unit, setUnit] = useState<"in" | "cm">("in");
   const [activeTab, setActiveTab] = useState<"chart" | "how-to">("chart");
+  const [selectedShirtType, setSelectedShirtType] = useState("tshirt");
+  const [selectedPantType, setSelectedPantType] = useState("cargo");
 
   const convertToCm = (inches: string) => {
     return inches
@@ -78,6 +121,13 @@ export default function SizeGuide({ isOpen, onClose, category = "tops" }: SizeGu
     if (unit === "in") return `${inches}"`;
     return `${convertToCm(inches)} cm`;
   };
+
+  const currentShirtData = shirtTypes.find((t) => t.id === selectedShirtType)?.data || [];
+  const currentPantData = pantTypes.find((t) => t.id === selectedPantType)?.data || [];
+  const currentData = category === "tops" ? currentShirtData : currentPantData;
+  const currentType = category === "tops" 
+    ? shirtTypes.find((t) => t.id === selectedShirtType)
+    : pantTypes.find((t) => t.id === selectedPantType);
 
   return (
     <AnimatePresence>
@@ -109,7 +159,7 @@ export default function SizeGuide({ isOpen, onClose, category = "tops" }: SizeGu
                 <div>
                   <h2 className="text-base md:text-lg font-bold text-[#111]">Size Guide</h2>
                   <p className="text-[10px] md:text-xs text-[#6E6E73]">
-                    {category === "tops" ? "Tops & Shirts" : "Pants & Bottoms"}
+                    {category === "tops" ? "Shirts & Tops" : "Pants & Bottoms"}
                   </p>
                 </div>
               </div>
@@ -149,6 +199,47 @@ export default function SizeGuide({ isOpen, onClose, category = "tops" }: SizeGu
             <div className="flex-1 overflow-y-auto p-5 md:p-6">
               {activeTab === "chart" ? (
                 <div>
+                  {/* Type Selector */}
+                  <div className="mb-5">
+                    <p className="text-xs text-[#6E6E73] mb-2">Select Type</p>
+                    <div className="flex flex-wrap gap-2">
+                      {category === "tops" ? (
+                        shirtTypes.map((type) => (
+                          <button
+                            key={type.id}
+                            onClick={() => setSelectedShirtType(type.id)}
+                            className={`px-4 py-2 rounded-full text-xs font-medium transition-all ${
+                              selectedShirtType === type.id
+                                ? "bg-black text-white"
+                                : "bg-[#F5F5F7] text-[#6E6E73] hover:bg-black/10"
+                            }`}
+                          >
+                            {type.label}
+                          </button>
+                        ))
+                      ) : (
+                        pantTypes.map((type) => (
+                          <button
+                            key={type.id}
+                            onClick={() => setSelectedPantType(type.id)}
+                            className={`px-4 py-2 rounded-full text-xs font-medium transition-all ${
+                              selectedPantType === type.id
+                                ? "bg-black text-white"
+                                : "bg-[#F5F5F7] text-[#6E6E73] hover:bg-black/10"
+                            }`}
+                          >
+                            {type.label}
+                          </button>
+                        ))
+                      )}
+                    </div>
+                    {currentType && (
+                      <p className="text-[10px] text-[#6E6E73] mt-2 italic">
+                        {currentType.description}
+                      </p>
+                    )}
+                  </div>
+
                   {/* Unit Toggle */}
                   <div className="flex items-center justify-between mb-5">
                     <p className="text-xs text-[#6E6E73]">All measurements in</p>
@@ -193,30 +284,33 @@ export default function SizeGuide({ isOpen, onClose, category = "tops" }: SizeGu
                               <th className="text-left py-3 text-[10px] md:text-xs font-bold text-[#111] uppercase tracking-wider">Hip</th>
                               <th className="text-left py-3 text-[10px] md:text-xs font-bold text-[#111] uppercase tracking-wider">Inseam</th>
                               <th className="text-left py-3 text-[10px] md:text-xs font-bold text-[#111] uppercase tracking-wider">Rise</th>
+                              <th className="text-left py-3 text-[10px] md:text-xs font-bold text-[#111] uppercase tracking-wider">Leg Opening</th>
                             </>
                           )}
                         </tr>
                       </thead>
                       <tbody>
-                        {category === "tops"
-                          ? menTopsSizes.map((row, i) => (
-                              <tr key={row.size} className={`border-b border-black/5 ${i % 2 === 0 ? "bg-[#FAFAFA]" : ""}`}>
-                                <td className="py-3 text-xs md:text-sm font-bold text-[#111]">{row.size}</td>
+                        {currentData.map((row: any, i: number) => (
+                          <tr key={row.size} className={`border-b border-black/5 ${i % 2 === 0 ? "bg-[#FAFAFA]" : ""}`}>
+                            <td className="py-3 text-xs md:text-sm font-bold text-[#111]">{row.size}</td>
+                            {category === "tops" ? (
+                              <>
                                 <td className="py-3 text-xs md:text-sm text-[#6E6E73]">{displayValue(row.chest)}</td>
                                 <td className="py-3 text-xs md:text-sm text-[#6E6E73]">{displayValue(row.length)}</td>
                                 <td className="py-3 text-xs md:text-sm text-[#6E6E73]">{displayValue(row.shoulder)}</td>
                                 <td className="py-3 text-xs md:text-sm text-[#6E6E73]">{displayValue(row.sleeve)}</td>
-                              </tr>
-                            ))
-                          : menBottomsSizes.map((row, i) => (
-                              <tr key={row.size} className={`border-b border-black/5 ${i % 2 === 0 ? "bg-[#FAFAFA]" : ""}`}>
-                                <td className="py-3 text-xs md:text-sm font-bold text-[#111]">{row.size}</td>
+                              </>
+                            ) : (
+                              <>
                                 <td className="py-3 text-xs md:text-sm text-[#6E6E73]">{displayValue(row.waist)}</td>
                                 <td className="py-3 text-xs md:text-sm text-[#6E6E73]">{displayValue(row.hip)}</td>
                                 <td className="py-3 text-xs md:text-sm text-[#6E6E73]">{displayValue(row.inseam)}</td>
                                 <td className="py-3 text-xs md:text-sm text-[#6E6E73]">{displayValue(row.rise)}</td>
-                              </tr>
-                            ))}
+                                <td className="py-3 text-xs md:text-sm text-[#6E6E73]">{displayValue(row.legOpening)}</td>
+                              </>
+                            )}
+                          </tr>
+                        ))}
                       </tbody>
                     </table>
                   </div>
@@ -224,7 +318,21 @@ export default function SizeGuide({ isOpen, onClose, category = "tops" }: SizeGu
                   {/* Fit Note */}
                   <div className="mt-5 p-3 md:p-4 bg-[#F5F5F7] rounded-xl">
                     <p className="text-[10px] md:text-xs text-[#6E6E73] leading-relaxed">
-                      <span className="font-bold text-[#111]">Fit Note:</span> Our garments are designed with a relaxed, oversized fit. If you prefer a more tailored look, we recommend sizing down. Between sizes? Go with the larger size for comfort.
+                      <span className="font-bold text-[#111]">Fit Note:</span> {
+                        category === "tops" 
+                          ? selectedShirtType === "hoodie" 
+                            ? "Our hoodies are designed with an oversized fit. Size down for a more regular look, or stay true to size for the intended oversized silhouette."
+                            : selectedShirtType === "crewneck"
+                            ? "Our crewnecks feature a relaxed fit with dropped shoulders. True to size for a comfortable everyday look."
+                            : "Our t-shirts have a regular fit. True to size for a classic look, or size up for a more relaxed feel."
+                          : selectedPantType === "cargo"
+                          ? "Our cargo pants have a relaxed fit through the leg with multiple utility pockets. True to size for the intended look."
+                          : selectedPantType === "jeans"
+                          ? "Our jeans feature a slim fit through the leg. If between sizes, we recommend sizing up for comfort."
+                          : selectedPantType === "jogger"
+                          ? "Our joggers have a tapered fit with elasticated cuffs. True to size for the intended athletic look."
+                          : "Our trousers feature a wide leg with a clean drape. True to size for the intended silhouette."
+                      }
                     </p>
                   </div>
                 </div>
@@ -263,14 +371,6 @@ export default function SizeGuide({ isOpen, onClose, category = "tops" }: SizeGu
                     <p className="text-xs text-white/70 leading-relaxed">
                       Use a soft measuring tape and measure over lightweight clothing. For the most accurate fit, have someone help you with the measurements.
                     </p>
-                  </div>
-
-                  {/* Still unsure? */}
-                  <div className="mt-5 text-center p-4 border border-black/10 rounded-xl">
-                    <p className="text-xs text-[#6E6E73] mb-2">Still not sure about your size?</p>
-                    <button className="text-xs font-bold text-[#111] underline hover:no-underline">
-                      Contact our fit specialists →
-                    </button>
                   </div>
                 </div>
               )}
