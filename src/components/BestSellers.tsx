@@ -3,8 +3,13 @@ import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { products } from "../data/products";
 import ProductCard from "./ProductCard";
+import { Product } from "../types";
 
-export default function BestSellers() {
+interface BestSellersProps {
+  onProductClick: (product: Product) => void;
+}
+
+export default function BestSellers({ onProductClick }: BestSellersProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -95,7 +100,8 @@ export default function BestSellers() {
         {bestSellers.map((product, i) => (
           <div
             key={product.id}
-            className="shrink-0 w-[160px] sm:w-[200px] md:w-[280px] lg:w-[340px] snap-start"
+            className="shrink-0 w-[160px] sm:w-[200px] md:w-[280px] lg:w-[340px] snap-start cursor-pointer"
+            onClick={() => onProductClick(product)}
           >
             <ProductCard product={product} index={i} />
           </div>

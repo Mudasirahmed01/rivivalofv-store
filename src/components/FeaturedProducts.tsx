@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { products } from "../data/products";
 import ProductCard from "./ProductCard";
+import { Product } from "../types";
 
 const filterCategories = [
   { label: "All", value: "all" },
@@ -12,9 +13,10 @@ const filterCategories = [
 
 interface FeaturedProductsProps {
   onViewAll: () => void;
+  onProductClick: (product: Product) => void;
 }
 
-export default function FeaturedProducts({ onViewAll }: FeaturedProductsProps) {
+export default function FeaturedProducts({ onViewAll, onProductClick }: FeaturedProductsProps) {
   const [activeFilter, setActiveFilter] = useState("all");
 
   const filteredProducts =
@@ -70,6 +72,8 @@ export default function FeaturedProducts({ onViewAll }: FeaturedProductsProps) {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.4, delay: i * 0.05 }}
+                className="cursor-pointer"
+                onClick={() => onProductClick(product)}
               >
                 <ProductCard product={product} index={i} />
               </motion.div>

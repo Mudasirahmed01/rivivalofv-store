@@ -3,9 +3,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
 import { products } from "../data/products";
 import ProductCard from "./ProductCard";
+import { Product } from "../types";
 
 interface AllProductsPageProps {
   onBack: () => void;
+  onProductClick: (product: Product) => void;
 }
 
 const filterCategories = [
@@ -14,7 +16,7 @@ const filterCategories = [
   { label: "Pants", value: "bottoms" },
 ];
 
-export default function AllProductsPage({ onBack }: AllProductsPageProps) {
+export default function AllProductsPage({ onBack, onProductClick }: AllProductsPageProps) {
   const [activeFilter, setActiveFilter] = useState("all");
 
   const filteredProducts =
@@ -76,6 +78,8 @@ export default function AllProductsPage({ onBack }: AllProductsPageProps) {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.4, delay: i * 0.05 }}
+                className="cursor-pointer"
+                onClick={() => onProductClick(product)}
               >
                 <ProductCard product={product} index={i} />
               </motion.div>

@@ -9,13 +9,16 @@ import BentoGrid from "./components/BentoGrid";
 import BestSellers from "./components/BestSellers";
 import FeaturedProducts from "./components/FeaturedProducts";
 import AllProductsPage from "./components/AllProductsPage";
+import ProductDetailPage from "./components/ProductDetailPage";
 import CartDrawer from "./components/CartDrawer";
 import Footer from "./components/Footer";
 import BackToTop from "./components/BackToTop";
 import AccountPage from "./components/AccountPage";
+import { Product } from "./types";
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState<"home" | "account" | "all-products">("home");
+  const [currentPage, setCurrentPage] = useState<"home" | "account" | "all-products" | "product-detail">("home");
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   const handleBackToHome = () => {
     setCurrentPage("home");
@@ -27,6 +30,12 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const handleProductClick = (product: Product) => {
+    setSelectedProduct(product);
+    setCurrentPage("product-detail");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   return (
     <div className="min-h-screen bg-[#FAFAFA] font-sans antialiased">
       <Header onAccountClick={() => setCurrentPage("account")} />
@@ -35,29 +44,14 @@ export default function App() {
       
       {currentPage === "home" && (
         <main>
-          {/* Section 1: Hero Carousel Banner */}
           <Hero />
-          
-          {/* Marquee Ticker */}
           <Marquee />
-          
-          {/* Features Strip */}
           <Features />
-          
-          {/* Section 2: Scroll-Driven Brand Statement */}
           <ScrollRevealText />
-          
-          {/* Section 3: New Releases Catalog */}
-          <ProductGrid />
-          
-          {/* Section 4: Bento Grid Category Showcase */}
+          <ProductGrid onProductClick={handleProductClick} />
           <BentoGrid />
-          
-          {/* Section 5: Best Sellers Horizontal Carousel */}
-          <BestSellers />
-          
-          {/* Section 6: Complete Collection (10 Products + View All Link) */}
-          <FeaturedProducts onViewAll={handleViewAllProducts} />
+          <BestSellers onProductClick={handleProductClick} />
+          <FeaturedProducts onViewAll={handleViewAllProducts} onProductClick={handleProductClick} />
         </main>
       )}
 
@@ -66,7 +60,15 @@ export default function App() {
       )}
 
       {currentPage === "all-products" && (
-        <AllProductsPage onBack={handleBackToHome} />
+        <AllProductsPage onBack={handleBackToHome} onProductClick={handleProductClick} />
+      )}
+
+      {currentPage === "product-detail" && selectedProduct && (
+        <ProductDetailPage 
+          product={selectedProduct} 
+          onBack={handleBackToHome}
+          onProductClick={handleProductClick}
+        />
       )}
 
       <Footer />

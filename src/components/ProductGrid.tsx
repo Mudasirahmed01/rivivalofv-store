@@ -3,8 +3,13 @@ import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { products, categories } from "../data/products";
 import ProductCard from "./ProductCard";
+import { Product } from "../types";
 
-export default function ProductGrid() {
+interface ProductGridProps {
+  onProductClick: (product: Product) => void;
+}
+
+export default function ProductGrid({ onProductClick }: ProductGridProps) {
   const [activeCategory, setActiveCategory] = useState<string>("all");
 
   const filteredProducts = activeCategory === "all"
@@ -67,7 +72,9 @@ export default function ProductGrid() {
           className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6"
         >
           {filteredProducts.map((product, i) => (
-            <ProductCard key={product.id} product={product} index={i} />
+            <div key={product.id} onClick={() => onProductClick(product)}>
+              <ProductCard product={product} index={i} />
+            </div>
           ))}
         </motion.div>
 
