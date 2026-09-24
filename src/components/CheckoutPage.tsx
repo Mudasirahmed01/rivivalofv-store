@@ -207,7 +207,7 @@ export default function CheckoutPage({ onBack }: CheckoutPageProps) {
                         type="tel"
                         value={formData.phone}
                         onChange={(e) => updateField("phone", e.target.value)}
-                        placeholder="+1 (555) 000-0000"
+                        placeholder="0313-1392018"
                         className="w-full px-4 py-3 bg-white border border-black/10 rounded-xl text-sm outline-none focus:border-black transition-colors"
                       />
                     </div>

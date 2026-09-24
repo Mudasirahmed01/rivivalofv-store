@@ -205,7 +205,7 @@ export default function ShippingReturns({ onBack }: ShippingReturnsProps) {
             <div>
               <h3 className="text-base font-bold text-[#111] mb-2">How to Initiate a Return</h3>
               <ol className="space-y-2 ml-4 list-decimal">
-                <li>Contact our support team at <strong className="text-[#111]">rivivalofv@gmail.com</strong> or WhatsApp: <strong className="text-[#111]">+92 300 1234567</strong></li>
+                <li>Contact our support team at <strong className="text-[#111]">rivivalofv@gmail.com</strong> or WhatsApp: <strong className="text-[#111]">0313-1392018</strong></li>
                 <li>Provide your order number and reason for return</li>
                 <li>Receive a Return Authorization (RA) number</li>
                 <li>Pack the item securely in original packaging</li>
@@ -272,7 +272,7 @@ export default function ShippingReturns({ onBack }: ShippingReturnsProps) {
           </div>
           <div className="space-y-3 text-sm text-white/70">
             <p><strong className="text-white">Email:</strong> rivivalofv@gmail.com</p>
-            <p><strong className="text-white">WhatsApp:</strong> +92 300 1234567</p>
+            <p><strong className="text-white">WhatsApp:</strong> 0313-1392018</p>
             <p><strong className="text-white">Hours:</strong> Mon-Sat, 10:00 AM - 8:00 PM (PKT)</p>
             <p className="text-xs text-white/50 mt-4">We aim to respond to all inquiries within 24 hours.</p>
           </div>
