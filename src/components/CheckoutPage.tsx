@@ -15,6 +15,7 @@ export default function CheckoutPage({ onBack }: CheckoutPageProps) {
   const { items, updateQuantity, removeItem, getTotalPrice, clearCart } = useCartStore();
   const [step, setStep] = useState<CheckoutStep>("info");
   const [orderTotal, setOrderTotal] = useState(0);
+  const [orderItems, setOrderItems] = useState<typeof items>([]);
   const [formData, setFormData] = useState({
     email: "",
     firstName: "",
@@ -43,10 +44,11 @@ export default function CheckoutPage({ onBack }: CheckoutPageProps) {
   };
 
   const handlePlaceOrder = () => {
-    // Save the total before clearing cart
+    // Save the total and items before clearing cart
     setOrderTotal(total);
+    setOrderItems([...items]);
     setStep("success");
-    // Clear cart after a small delay to ensure success page renders with correct total
+    // Clear cart after a small delay to ensure success page renders with correct data
     setTimeout(() => {
       clearCart();
     }, 100);
@@ -116,7 +118,7 @@ export default function CheckoutPage({ onBack }: CheckoutPageProps) {
             email={formData.email}
             orderNumber={`RO5-${Math.floor(Math.random() * 90000 + 10000)}`}
             totalAmount={formatPKR(orderTotal)}
-            items={items.map((item) => ({
+            items={orderItems.map((item) => ({
               title: item.product.title,
               quantity: item.quantity,
               size: item.selectedSize,
