@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Minus, Plus, X, Trash2, Check, Truck, Shield, CreditCard, Banknote } from "lucide-react";
 import { useCartStore } from "../store/cartStore";
 import { formatPKR, USD_TO_PKR } from "../lib/currency";
+import EmailConfirmation from "./EmailConfirmation";
 
 interface CheckoutPageProps {
   onBack: () => void;
@@ -109,6 +110,19 @@ export default function CheckoutPage({ onBack }: CheckoutPageProps) {
           >
             CONTINUE SHOPPING
           </button>
+
+          {/* Email Confirmation Preview */}
+          <EmailConfirmation
+            email={formData.email}
+            orderNumber={`RO5-${Math.floor(Math.random() * 90000 + 10000)}`}
+            totalAmount={formatPKR(orderTotal)}
+            items={items.map((item) => ({
+              title: item.product.title,
+              quantity: item.quantity,
+              size: item.selectedSize,
+              price: formatPKR(item.product.price * item.quantity),
+            }))}
+          />
         </motion.div>
       </div>
     );

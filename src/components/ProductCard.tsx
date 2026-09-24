@@ -2,8 +2,11 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Product } from "../types";
 import { useCartStore } from "../store/cartStore";
-import { Plus, Share2 } from "lucide-react";
+import { useWishlistStore } from "../store/wishlistStore";
+import { useReviewsStore } from "../store/reviewsStore";
+import { Plus, Share2, Heart } from "lucide-react";
 import ShareModal from "./ShareModal";
+import RatingStars from "./RatingStars";
 import { formatPKR } from "../lib/currency";
 
 interface ProductCardProps {
@@ -16,10 +19,21 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
   const [showSizes, setShowSizes] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const { addItem, openCart } = useCartStore();
+  const { isInWishlist, toggleItem } = useWishlistStore();
+  const { getAverageRating, getTotalReviews } = useReviewsStore();
+
+  const isWishlisted = isInWishlist(product.id);
+  const avgRating = getAverageRating(product.id);
+  const reviewCount = getTotalReviews(product.id);
 
   const handleShare = (e: React.MouseEvent) => {
     e.stopPropagation();
     setShowShareModal(true);
+  };
+
+  const handleWishlistToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    toggleItem(product);
   };
 
   const handleAddToCart = (size: string) => {
@@ -85,20 +99,37 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
           </div>
         )}
 
-        {/* Share Button - Top Right */}
-        <motion.button
-          onClick={handleShare}
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ 
-            opacity: isHovered ? 1 : 0,
-            scale: isHovered ? 1 : 0.8
-          }}
-          transition={{ duration: 0.2 }}
-          className="absolute top-3 right-3 md:top-4 md:right-4 w-8 h-8 md:w-9 md:h-9 rounded-full bg-white/90 backdrop-blur-sm text-[#111] flex items-center justify-center hover:bg-white hover:scale-110 transition-all duration-300 z-10"
-          title="Share this product"
-        >
-          <Share2 size={14} />
-        </motion.button>
+        {/* Action Buttons - Top Right */}
+        <div className="absolute top-3 right-3 md:top-4 md:right-4 flex flex-col gap-2 z-10">
+          {/* Wishlist Button - Always visible */}
+          <motion.button
+            onClick={handleWishlistToggle}
+            whileTap={{ scale: 0.85 }}
+            className={`w-8 h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center transition-all duration-300 ${
+              isWishlisted
+                ? "bg-red-500 text-white"
+                : "bg-white/90 backdrop-blur-sm text-[#111] hover:bg-white"
+            }`}
+            title={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+          >
+            <Heart size={14} fill={isWishlisted ? "white" : "none"} />
+          </motion.button>
+
+          {/* Share Button - On hover */}
+          <motion.button
+            onClick={handleShare}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ 
+              opacity: isHovered ? 1 : 0,
+              scale: isHovered ? 1 : 0.8
+            }}
+            transition={{ duration: 0.2 }}
+            className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-white/90 backdrop-blur-sm text-[#111] flex items-center justify-center hover:bg-white hover:scale-110 transition-all duration-300"
+            title="Share this product"
+          >
+            <Share2 size={14} />
+          </motion.button>
+        </div>
       </div>
 
       {/* Size Picker Dropdown */}
@@ -139,6 +170,13 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           />
         </div>
+
+        {/* Rating */}
+        {reviewCount > 0 && (
+          <div className="mt-1.5">
+            <RatingStars rating={avgRating} size={12} showNumber reviewCount={reviewCount} />
+          </div>
+        )}
 
         {/* Fabric */}
         <p className="text-[10px] md:text-xs text-[#6E6E73] mt-1 leading-tight">

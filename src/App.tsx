@@ -12,6 +12,8 @@ import AllProductsPage from "./components/AllProductsPage";
 import ProductDetailPage from "./components/ProductDetailPage";
 import CartDrawer from "./components/CartDrawer";
 import CheckoutPage from "./components/CheckoutPage";
+import WishlistPage from "./components/WishlistPage";
+import RecentlyViewed from "./components/RecentlyViewed";
 import Footer from "./components/Footer";
 import BackToTop from "./components/BackToTop";
 import AccountPage from "./components/AccountPage";
@@ -21,7 +23,7 @@ import { products } from "./data/products";
 import { getProductSlugFromUrl, clearProductHash } from "./lib/shareUtils";
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState<"home" | "account" | "all-products" | "product-detail" | "checkout">("home");
+  const [currentPage, setCurrentPage] = useState<"home" | "account" | "all-products" | "product-detail" | "checkout" | "wishlist">("home");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   // Check URL hash on mount and when it changes
@@ -68,10 +70,15 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const handleGoToWishlist = () => {
+    setCurrentPage("wishlist");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   return (
     <SmoothScroll>
     <div className="min-h-screen bg-[#FAFAFA] font-sans antialiased">
-      <Header onAccountClick={() => setCurrentPage("account")} />
+      <Header onAccountClick={() => setCurrentPage("account")} onWishlistClick={handleGoToWishlist} />
       <CartDrawer onCheckout={handleGoToCheckout} />
       <BackToTop />
       
@@ -85,6 +92,7 @@ export default function App() {
           <BentoGrid />
           <BestSellers onProductClick={handleProductClick} />
           <FeaturedProducts onViewAll={handleViewAllProducts} onProductClick={handleProductClick} />
+          <RecentlyViewed onProductClick={handleProductClick} />
         </main>
       )}
 
@@ -106,6 +114,10 @@ export default function App() {
 
       {currentPage === "checkout" && (
         <CheckoutPage onBack={handleBackToHome} />
+      )}
+
+      {currentPage === "wishlist" && (
+        <WishlistPage onBack={handleBackToHome} onProductClick={handleProductClick} />
       )}
 
       <Footer />

@@ -1,12 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Minus, Plus, ShoppingBag, Share2, Truck, Shield, RotateCcw, Check } from "lucide-react";
 import { Product } from "../types";
 import { useCartStore } from "../store/cartStore";
+import { useRecentlyViewedStore } from "../store/recentlyViewedStore";
 import { products } from "../data/products";
 import ProductCard from "./ProductCard";
 import SizeGuide from "./SizeGuide";
 import ShareModal from "./ShareModal";
+import ProductReviews from "./ProductReviews";
 import { formatPKR } from "../lib/currency";
 
 interface ProductDetailPageProps {
@@ -18,6 +20,12 @@ interface ProductDetailPageProps {
 export default function ProductDetailPage({ product, onBack, onProductClick }: ProductDetailPageProps) {
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState(0);
+  const { addProduct } = useRecentlyViewedStore();
+
+  // Track recently viewed
+  useEffect(() => {
+    addProduct(product);
+  }, [product.id]);
   const [quantity, setQuantity] = useState(1);
   const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
@@ -281,6 +289,9 @@ export default function ProductDetailPage({ product, onBack, onProductClick }: P
             </div>
           </motion.div>
         </div>
+
+        {/* Product Reviews */}
+        <ProductReviews productId={product.id} />
 
         {/* Related Products */}
         {relatedProducts.length > 0 && (

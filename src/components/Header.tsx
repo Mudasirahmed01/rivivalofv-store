@@ -1,18 +1,28 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShoppingBag, Search, User, X } from "lucide-react";
+import { ShoppingBag, Search, User, X, Heart } from "lucide-react";
 import { useCartStore } from "../store/cartStore";
+import { useWishlistStore } from "../store/wishlistStore";
+import AdvancedSearch from "./AdvancedSearch";
+import { Product } from "../types";
 
 interface HeaderProps {
   onAccountClick: () => void;
+  onWishlistClick: () => void;
 }
 
-export default function Header({ onAccountClick }: HeaderProps) {
+export default function Header({ onAccountClick, onWishlistClick }: HeaderProps) {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const { toggleCart, getTotalItems } = useCartStore();
+  const { items: wishlistItems } = useWishlistStore();
   const totalItems = getTotalItems();
+
+  const handleProductClickFromSearch = (product: Product) => {
+    setSearchOpen(false);
+    window.location.hash = `#product/${product.slug}`;
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -85,7 +95,7 @@ export default function Header({ onAccountClick }: HeaderProps) {
           </div>
 
           {/* Right: Utility Icons */}
-          <div className="flex items-center gap-1 md:gap-4">
+          <div className="flex items-center gap-1 md:gap-3">
             <button
               onClick={() => setSearchOpen(true)}
               className="p-2 hover:scale-108 transition-transform duration-200"
@@ -93,6 +103,23 @@ export default function Header({ onAccountClick }: HeaderProps) {
             >
               <Search size={18} className="text-[#111] md:hidden" />
               <Search size={20} className="text-[#111] hidden md:block" />
+            </button>
+            <button
+              onClick={onWishlistClick}
+              className="relative p-2 hover:scale-108 transition-transform duration-200"
+              aria-label="Wishlist"
+            >
+              <Heart size={18} className="text-[#111] md:hidden" />
+              <Heart size={20} className="text-[#111] hidden md:block" />
+              {wishlistItems.length > 0 && (
+                <motion.span
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="absolute -top-0.5 -right-0.5 w-4 h-4 md:w-5 md:h-5 bg-red-500 text-white text-[9px] md:text-[10px] font-bold rounded-full flex items-center justify-center"
+                >
+                  {wishlistItems.length}
+                </motion.span>
+              )}
             </button>
             <button
               onClick={onAccountClick}
@@ -189,53 +216,12 @@ export default function Header({ onAccountClick }: HeaderProps) {
         )}
       </AnimatePresence>
 
-      {/* Search Modal */}
-      <AnimatePresence>
-        {searchOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-start justify-center pt-20 md:pt-32 px-4"
-            onClick={() => setSearchOpen(false)}
-          >
-            <motion.div
-              initial={{ y: -20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: -20, opacity: 0 }}
-              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="bg-white rounded-2xl p-4 md:p-6 w-full max-w-xl shadow-2xl"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center gap-3 border-b border-black/10 pb-4">
-                <Search size={18} className="text-[#6E6E73] shrink-0" />
-                <input
-                  type="text"
-                  placeholder="Search products..."
-                  className="flex-1 text-base md:text-lg outline-none placeholder:text-[#6E6E73]"
-                  autoFocus
-                />
-                <button onClick={() => setSearchOpen(false)}>
-                  <X size={18} className="text-[#6E6E73] hover:text-[#111]" />
-                </button>
-              </div>
-              <div className="pt-4">
-                <p className="text-xs text-[#6E6E73] uppercase tracking-wider mb-3">Trending</p>
-                <div className="flex flex-wrap gap-2">
-                  {["Heavyweight Hoodie", "Oversized Tee", "Cargo Pants", "Slim Jeans"].map((term) => (
-                    <span
-                      key={term}
-                      className="px-3 py-1.5 bg-[#F5F5F7] rounded-full text-xs md:text-sm text-[#111] cursor-pointer hover:bg-black hover:text-white transition-colors"
-                    >
-                      {term}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Advanced Search Modal */}
+      <AdvancedSearch
+        isOpen={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        onProductClick={handleProductClickFromSearch}
+      />
     </>
   );
 }
