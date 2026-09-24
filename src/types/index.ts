@@ -10,6 +10,11 @@ export interface ProductVariant {
   sku: string;
 }
 
+export interface ProductColor {
+  name: string;
+  hex: string;
+}
+
 export interface Product {
   id: string;
   title: string;
@@ -23,6 +28,8 @@ export interface Product {
   category: "tops" | "bottoms";
   homepageSlot: "hero" | "new_release" | "bento_1" | "bento_2" | "bento_3" | "best_seller" | "none";
   variants: ProductVariant[];
+  colors?: ProductColor[];
+  tags?: string[];
   isPublished: boolean;
   createdAt: string;
   updatedAt: string;

@@ -22,6 +22,8 @@ import TermsPage from "./components/TermsPage";
 import PrivacyPage from "./components/PrivacyPage";
 import ContactPage from "./components/ContactPage";
 import CookieConsent from "./components/CookieConsent";
+import ToastContainer from "./components/ToastContainer";
+import ErrorBoundary from "./components/ErrorBoundary";
 import SmoothScroll from "./components/SmoothScroll";
 import { Product } from "./types";
 import { products } from "./data/products";
@@ -81,11 +83,13 @@ export default function App() {
   };
 
   return (
+    <ErrorBoundary>
     <SmoothScroll>
     <div className="min-h-screen bg-[#FAFAFA] font-sans antialiased">
       <Header onAccountClick={() => setCurrentPage("account")} onWishlistClick={handleGoToWishlist} />
       <CartDrawer onCheckout={handleGoToCheckout} />
       <BackToTop />
+      <ToastContainer />
       
       {currentPage === "home" && (
         <main>
@@ -145,5 +149,6 @@ export default function App() {
       <CookieConsent />
     </div>
     </SmoothScroll>
+    </ErrorBoundary>
   );
 }

@@ -56,7 +56,7 @@ export default function CheckoutPage({ onBack }: CheckoutPageProps) {
 
   const isInfoValid = formData.email && formData.firstName && formData.lastName && formData.phone;
   const isShippingValid = formData.address && formData.city && formData.state && formData.zipCode;
-  const isPaymentValid = formData.paymentMethod === "cod" || (formData.cardNumber && formData.cardExpiry && formData.cardCvc && formData.cardName);
+  const isPaymentValid = true; // COD is always valid
 
   if (items.length === 0 && step !== "success") {
     return (
@@ -372,102 +372,24 @@ export default function CheckoutPage({ onBack }: CheckoutPageProps) {
                 >
                   <h2 className="text-xl md:text-2xl font-bold text-[#111] mb-6">Payment Method</h2>
                   
-                  {/* Payment Method Selection */}
-                  <div className="space-y-3 mb-6">
-                    <button
-                      onClick={() => updateField("paymentMethod", "card")}
-                      className={`w-full p-4 border rounded-xl flex items-center gap-3 transition-all ${
-                        formData.paymentMethod === "card"
-                          ? "border-black bg-black/5"
-                          : "border-black/10 hover:border-black/30"
-                      }`}
-                    >
-                      <CreditCard size={20} />
-                      <div className="text-left">
-                        <p className="text-sm font-bold text-[#111]">Credit / Debit Card</p>
-                        <p className="text-[10px] text-[#6E6E73]">Visa, Mastercard, Amex</p>
+                  {/* Cash on Delivery Only */}
+                  <div className="mb-6">
+                    <div className="w-full p-5 border-2 border-black bg-black/5 rounded-xl flex items-center gap-4">
+                      <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center shrink-0">
+                        <Banknote size={24} className="text-white" />
                       </div>
-                      <div className={`ml-auto w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                        formData.paymentMethod === "card" ? "border-black" : "border-black/20"
-                      }`}>
-                        {formData.paymentMethod === "card" && <div className="w-2.5 h-2.5 bg-black rounded-full" />}
+                      <div className="flex-1">
+                        <p className="text-base font-bold text-[#111]">Cash on Delivery (COD)</p>
+                        <p className="text-xs text-[#6E6E73] mt-0.5">Pay when you receive your order</p>
                       </div>
-                    </button>
-                    <button
-                      onClick={() => updateField("paymentMethod", "cod")}
-                      className={`w-full p-4 border rounded-xl flex items-center gap-3 transition-all ${
-                        formData.paymentMethod === "cod"
-                          ? "border-black bg-black/5"
-                          : "border-black/10 hover:border-black/30"
-                      }`}
-                    >
-                      <Banknote size={20} />
-                      <div className="text-left">
-                        <p className="text-sm font-bold text-[#111]">Cash on Delivery</p>
-                        <p className="text-[10px] text-[#6E6E73]">Pay when you receive</p>
+                      <div className="w-5 h-5 rounded-full border-2 border-black flex items-center justify-center">
+                        <div className="w-2.5 h-2.5 bg-black rounded-full" />
                       </div>
-                      <div className={`ml-auto w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                        formData.paymentMethod === "cod" ? "border-black" : "border-black/20"
-                      }`}>
-                        {formData.paymentMethod === "cod" && <div className="w-2.5 h-2.5 bg-black rounded-full" />}
-                      </div>
-                    </button>
+                    </div>
+                    <p className="text-xs text-[#6E6E73] mt-3 leading-relaxed">
+                      💡 Pay in cash when your order is delivered. No advance payment required. Available across Pakistan.
+                    </p>
                   </div>
-
-                  {/* Card Details */}
-                  {formData.paymentMethod === "card" && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      className="space-y-4"
-                    >
-                      <div>
-                        <label className="text-xs font-bold text-[#111] uppercase tracking-wider mb-2 block">Card Number</label>
-                        <input
-                          type="text"
-                          value={formData.cardNumber}
-                          onChange={(e) => updateField("cardNumber", e.target.value)}
-                          placeholder="1234 5678 9012 3456"
-                          maxLength={19}
-                          className="w-full px-4 py-3 bg-white border border-black/10 rounded-xl text-sm outline-none focus:border-black transition-colors"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs font-bold text-[#111] uppercase tracking-wider mb-2 block">Name on Card</label>
-                        <input
-                          type="text"
-                          value={formData.cardName}
-                          onChange={(e) => updateField("cardName", e.target.value)}
-                          placeholder="John Doe"
-                          className="w-full px-4 py-3 bg-white border border-black/10 rounded-xl text-sm outline-none focus:border-black transition-colors"
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="text-xs font-bold text-[#111] uppercase tracking-wider mb-2 block">Expiry</label>
-                          <input
-                            type="text"
-                            value={formData.cardExpiry}
-                            onChange={(e) => updateField("cardExpiry", e.target.value)}
-                            placeholder="MM/YY"
-                            maxLength={5}
-                            className="w-full px-4 py-3 bg-white border border-black/10 rounded-xl text-sm outline-none focus:border-black transition-colors"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-xs font-bold text-[#111] uppercase tracking-wider mb-2 block">CVC</label>
-                          <input
-                            type="text"
-                            value={formData.cardCvc}
-                            onChange={(e) => updateField("cardCvc", e.target.value)}
-                            placeholder="123"
-                            maxLength={4}
-                            className="w-full px-4 py-3 bg-white border border-black/10 rounded-xl text-sm outline-none focus:border-black transition-colors"
-                          />
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
 
                   <div className="flex gap-3 pt-6">
                     <button

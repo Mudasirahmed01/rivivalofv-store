@@ -4,6 +4,7 @@ import { Product } from "../types";
 import { useCartStore } from "../store/cartStore";
 import { useWishlistStore } from "../store/wishlistStore";
 import { useReviewsStore } from "../store/reviewsStore";
+import { useToastStore } from "../store/toastStore";
 import { Plus, Share2, Heart } from "lucide-react";
 import ShareModal from "./ShareModal";
 import RatingStars from "./RatingStars";
@@ -18,9 +19,11 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [showSizes, setShowSizes] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [selectedColor, setSelectedColor] = useState(product.colors?.[0]?.name || null);
   const { addItem, openCart } = useCartStore();
   const { isInWishlist, toggleItem } = useWishlistStore();
   const { getAverageRating, getTotalReviews } = useReviewsStore();
+  const toast = useToastStore();
 
   const isWishlisted = isInWishlist(product.id);
   const avgRating = getAverageRating(product.id);
@@ -34,6 +37,11 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
   const handleWishlistToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
     toggleItem(product);
+    if (!isWishlisted) {
+      toast.success("Added to wishlist!");
+    } else {
+      toast.info("Removed from wishlist");
+    }
   };
 
   const handleAddToCart = (size: string) => {
@@ -90,14 +98,24 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
           </button>
         </motion.div>
 
-        {/* Sale Badge */}
-        {product.compareAtPrice && (
-          <div className="absolute top-3 left-3 md:top-4 md:left-4">
+        {/* Sale Badge & Tags */}
+        <div className="absolute top-3 left-3 md:top-4 md:left-4 flex flex-col gap-1">
+          {product.compareAtPrice && (
             <span className="inline-block px-2.5 py-1 bg-red-500 text-white text-[9px] md:text-[10px] font-bold tracking-wider uppercase">
               Sale
             </span>
-          </div>
-        )}
+          )}
+          {product.tags?.includes("new-arrival") && (
+            <span className="inline-block px-2.5 py-1 bg-black text-white text-[9px] md:text-[10px] font-bold tracking-wider uppercase">
+              New
+            </span>
+          )}
+          {product.tags?.includes("bestseller") && (
+            <span className="inline-block px-2.5 py-1 bg-amber-500 text-white text-[9px] md:text-[10px] font-bold tracking-wider uppercase">
+              Bestseller
+            </span>
+          )}
+        </div>
 
         {/* Action Buttons - Top Right */}
         <div className="absolute top-3 right-3 md:top-4 md:right-4 flex flex-col gap-2 z-10">
@@ -175,6 +193,26 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
         {reviewCount > 0 && (
           <div className="mt-1.5">
             <RatingStars rating={avgRating} size={12} showNumber reviewCount={reviewCount} />
+          </div>
+        )}
+
+        {/* Color Swatches */}
+        {product.colors && product.colors.length > 0 && (
+          <div className="flex items-center gap-1 mt-2">
+            {product.colors.map((color) => (
+              <button
+                key={color.name}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedColor(color.name);
+                }}
+                className={`w-4 h-4 rounded-full border-2 transition-all ${
+                  selectedColor === color.name ? "border-black scale-110" : "border-gray-300"
+                }`}
+                style={{ backgroundColor: color.hex }}
+                title={color.name}
+              />
+            ))}
           </div>
         )}
 

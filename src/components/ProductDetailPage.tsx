@@ -4,11 +4,14 @@ import { ArrowLeft, Minus, Plus, ShoppingBag, Share2, Truck, Shield, RotateCcw, 
 import { Product } from "../types";
 import { useCartStore } from "../store/cartStore";
 import { useRecentlyViewedStore } from "../store/recentlyViewedStore";
+import { useToastStore } from "../store/toastStore";
 import { products } from "../data/products";
 import ProductCard from "./ProductCard";
 import SizeGuide from "./SizeGuide";
 import ShareModal from "./ShareModal";
 import ProductReviews from "./ProductReviews";
+import ImageZoom from "./ImageZoom";
+import Breadcrumbs from "./Breadcrumbs";
 import { formatPKR } from "../lib/currency";
 
 interface ProductDetailPageProps {
@@ -26,11 +29,14 @@ export default function ProductDetailPage({ product, onBack, onProductClick }: P
   useEffect(() => {
     addProduct(product);
   }, [product.id]);
+  const [selectedColor, setSelectedColor] = useState(product.colors?.[0]?.name || null);
   const [quantity, setQuantity] = useState(1);
   const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
   const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [zoomOpen, setZoomOpen] = useState(false);
   const { addItem, openCart } = useCartStore();
+  const toast = useToastStore();
 
   const handleAddToCart = () => {
     if (selectedSize) {
@@ -38,10 +44,13 @@ export default function ProductDetailPage({ product, onBack, onProductClick }: P
         addItem(product, selectedSize);
       }
       setAddedToCart(true);
+      toast.success(`Added to bag!`);
       setTimeout(() => {
         openCart();
         setAddedToCart(false);
       }, 800);
+    } else {
+      toast.warning("Please select a size first");
     }
   };
 
@@ -60,11 +69,20 @@ export default function ProductDetailPage({ product, onBack, onProductClick }: P
         {/* Back Button */}
         <button
           onClick={onBack}
-          className="flex items-center gap-2 text-xs md:text-sm text-[#6E6E73] hover:text-[#111] transition-colors mb-6 md:mb-8"
+          className="flex items-center gap-2 text-xs md:text-sm text-[#6E6E73] hover:text-[#111] transition-colors mb-4"
         >
           <ArrowLeft size={14} />
           Back
         </button>
+
+        {/* Breadcrumbs */}
+        <Breadcrumbs
+          items={[
+            { label: "Home", href: "#" },
+            { label: product.category === "tops" ? "Shirts" : "Pants", href: "#" },
+            { label: product.title },
+          ]}
+        />
 
         {/* Product Detail Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12">
@@ -75,12 +93,15 @@ export default function ProductDetailPage({ product, onBack, onProductClick }: P
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           >
             {/* Main Image */}
-            <div className="relative aspect-[3/4] bg-[#ECECEC] overflow-hidden mb-4">
+            <div 
+              className="relative aspect-[3/4] bg-[#ECECEC] overflow-hidden mb-4 cursor-zoom-in"
+              onClick={() => setZoomOpen(true)}
+            >
               <motion.img
                 key={selectedImage}
                 src={product.images[selectedImage]?.url}
                 alt={product.images[selectedImage]?.altText}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.4 }}
@@ -167,6 +188,30 @@ export default function ProductDetailPage({ product, onBack, onProductClick }: P
             <p className="text-sm md:text-base text-[#6E6E73] leading-relaxed mb-6">
               {product.description}
             </p>
+
+            {/* Color Selector */}
+            {product.colors && product.colors.length > 0 && (
+              <div className="mb-6">
+                <h3 className="text-xs font-bold text-[#111] uppercase tracking-wider mb-3">
+                  Color: <span className="font-normal text-[#6E6E73]">{selectedColor}</span>
+                </h3>
+                <div className="flex gap-2">
+                  {product.colors.map((color) => (
+                    <button
+                      key={color.name}
+                      onClick={() => setSelectedColor(color.name)}
+                      className={`w-10 h-10 rounded-full border-2 transition-all ${
+                        selectedColor === color.name
+                          ? "border-black scale-110"
+                          : "border-gray-300 hover:border-black"
+                      }`}
+                      style={{ backgroundColor: color.hex }}
+                      title={color.name}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Fabric Details */}
             <div className="border-t border-black/10 pt-6 mb-6">
@@ -328,6 +373,14 @@ export default function ProductDetailPage({ product, onBack, onProductClick }: P
         productTitle={product.title}
         productSlug={product.slug}
         productPrice={product.price}
+      />
+
+      {/* Image Zoom */}
+      <ImageZoom
+        src={product.images[selectedImage]?.url}
+        alt={product.images[selectedImage]?.altText}
+        isOpen={zoomOpen}
+        onClose={() => setZoomOpen(false)}
       />
     </div>
   );

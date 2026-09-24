@@ -10,20 +10,43 @@ interface WishlistStore {
   clearWishlist: () => void;
 }
 
+// Load wishlist from localStorage
+const loadWishlistFromStorage = (): Product[] => {
+  try {
+    const saved = localStorage.getItem("wishlist");
+    return saved ? JSON.parse(saved) : [];
+  } catch {
+    return [];
+  }
+};
+
+// Save wishlist to localStorage
+const saveWishlistToStorage = (items: Product[]) => {
+  try {
+    localStorage.setItem("wishlist", JSON.stringify(items));
+  } catch (error) {
+    console.error("Failed to save wishlist:", error);
+  }
+};
+
 export const useWishlistStore = create<WishlistStore>((set, get) => ({
-  items: [],
+  items: loadWishlistFromStorage(),
 
   addItem: (product: Product) => {
     set((state) => {
       if (state.items.find((item) => item.id === product.id)) return state;
-      return { items: [...state.items, product] };
+      const newItems = [...state.items, product];
+      saveWishlistToStorage(newItems);
+      return { items: newItems };
     });
   },
 
   removeItem: (productId: string) => {
-    set((state) => ({
-      items: state.items.filter((item) => item.id !== productId),
-    }));
+    set((state) => {
+      const newItems = state.items.filter((item) => item.id !== productId);
+      saveWishlistToStorage(newItems);
+      return { items: newItems };
+    });
   },
 
   isInWishlist: (productId: string) => {
@@ -39,5 +62,8 @@ export const useWishlistStore = create<WishlistStore>((set, get) => ({
     }
   },
 
-  clearWishlist: () => set({ items: [] }),
+  clearWishlist: () => {
+    saveWishlistToStorage([]);
+    set({ items: [] });
+  },
 }));
