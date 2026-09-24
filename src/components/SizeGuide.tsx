@@ -159,7 +159,7 @@ export default function SizeGuide({ isOpen, onClose, category = "tops" }: SizeGu
                 <div>
                   <h2 className="text-base md:text-lg font-bold text-[#111]">Size Guide</h2>
                   <p className="text-[10px] md:text-xs text-[#6E6E73]">
-                    {category === "tops" ? "Shirts & Tops" : "Pants & Bottoms"}
+                    {category === "tops" ? "Shirts" : "Pants"}
                   </p>
                 </div>
               </div>

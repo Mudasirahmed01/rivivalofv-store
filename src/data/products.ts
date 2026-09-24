@@ -271,8 +271,8 @@ export const products: Product[] = [
 ];
 
 export const categories = [
-  { id: "1", name: "Shirts & Tops", slug: "tops", description: "Premium tees, hoodies, and crewnecks" },
-  { id: "2", name: "Pants & Bottoms", slug: "bottoms", description: "Cargos, denim, joggers, and trousers" },
+  { id: "1", name: "Shirts", slug: "tops", description: "Premium tees, hoodies, and crewnecks" },
+  { id: "2", name: "Pants", slug: "bottoms", description: "Cargos, denim, joggers, and trousers" },
 ];
 
 export const heroSlides = [

@@ -2,21 +2,20 @@ import { motion } from "framer-motion";
 import { Instagram, Twitter, MessageCircle } from "lucide-react";
 
 interface FooterProps {
-  onNavigate?: (page: "shipping" | "terms" | "privacy") => void;
+  onNavigate?: (page: "shipping" | "terms" | "privacy" | "contact") => void;
 }
 
 const footerLinks = {
   shop: [
     { label: "New Releases", href: "#" },
     { label: "Best Sellers", href: "#" },
-    { label: "Shirts & Tops", href: "#" },
-    { label: "Pants & Bottoms", href: "#" },
+    { label: "Shirts", href: "#" },
+    { label: "Pants", href: "#" },
   ],
   support: [
     { label: "Shipping & Returns", href: "#", page: "shipping" as const },
     { label: "Size Guide", href: "#" },
-    { label: "Care Guide", href: "#" },
-    { label: "Contact Us", href: "#" },
+    { label: "Contact Us", href: "#", page: "contact" as const },
   ],
   legal: [
     { label: "Privacy Policy", href: "#", page: "privacy" as const },
@@ -40,7 +39,7 @@ function FooterLink({ label, href, onClick }: { label: string; href: string; onC
 }
 
 export default function Footer({ onNavigate }: FooterProps) {
-  const handleLinkClick = (e: React.MouseEvent, page: "shipping" | "terms" | "privacy") => {
+  const handleLinkClick = (e: React.MouseEvent, page: "shipping" | "terms" | "privacy" | "contact") => {
     e.preventDefault();
     onNavigate?.(page);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -85,9 +84,6 @@ export default function Footer({ onNavigate }: FooterProps) {
             </h4>
             <div className="space-y-0">
               <FooterLink label="Our Story" href="#" />
-              <FooterLink label="Sustainability" href="#" />
-              <FooterLink label="Careers" href="#" />
-              <FooterLink label="Press" href="#" />
             </div>
             {/* Status */}
             <div className="flex items-center gap-2 mt-4 md:mt-6">

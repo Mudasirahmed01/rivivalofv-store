@@ -20,13 +20,15 @@ import AccountPage from "./components/AccountPage";
 import ShippingReturns from "./components/ShippingReturns";
 import TermsPage from "./components/TermsPage";
 import PrivacyPage from "./components/PrivacyPage";
+import ContactPage from "./components/ContactPage";
+import CookieConsent from "./components/CookieConsent";
 import SmoothScroll from "./components/SmoothScroll";
 import { Product } from "./types";
 import { products } from "./data/products";
 import { getProductSlugFromUrl, clearProductHash } from "./lib/shareUtils";
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState<"home" | "account" | "all-products" | "product-detail" | "checkout" | "wishlist" | "shipping" | "terms" | "privacy">("home");
+  const [currentPage, setCurrentPage] = useState<"home" | "account" | "all-products" | "product-detail" | "checkout" | "wishlist" | "shipping" | "terms" | "privacy" | "contact">("home");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   // Check URL hash on mount and when it changes
@@ -135,7 +137,12 @@ export default function App() {
         <PrivacyPage onBack={handleBackToHome} />
       )}
 
+      {currentPage === "contact" && (
+        <ContactPage onBack={handleBackToHome} />
+      )}
+
       <Footer onNavigate={setCurrentPage} />
+      <CookieConsent />
     </div>
     </SmoothScroll>
   );
