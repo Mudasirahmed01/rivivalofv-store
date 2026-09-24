@@ -6,7 +6,7 @@ import { useCartStore } from "../store/cartStore";
 import { products } from "../data/products";
 import ProductCard from "./ProductCard";
 import SizeGuide from "./SizeGuide";
-import { shareProduct } from "../lib/shareUtils";
+import ShareModal from "./ShareModal";
 
 interface ProductDetailPageProps {
   product: Product;
@@ -20,7 +20,7 @@ export default function ProductDetailPage({ product, onBack, onProductClick }: P
   const [quantity, setQuantity] = useState(1);
   const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
-  const [shareSuccess, setShareSuccess] = useState(false);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
   const { addItem, openCart } = useCartStore();
 
   const handleAddToCart = () => {
@@ -36,18 +36,8 @@ export default function ProductDetailPage({ product, onBack, onProductClick }: P
     }
   };
 
-  const handleShare = async () => {
-    const result = await shareProduct({
-      title: product.title,
-      description: product.description,
-      slug: product.slug,
-      price: product.price,
-    });
-
-    if (result.success) {
-      setShareSuccess(true);
-      setTimeout(() => setShareSuccess(false), 2000);
-    }
+  const handleShare = () => {
+    setShareModalOpen(true);
   };
 
   // Get related products (same category, exclude current)
@@ -101,23 +91,10 @@ export default function ProductDetailPage({ product, onBack, onProductClick }: P
                 <motion.button
                   whileTap={{ scale: 0.9 }}
                   onClick={handleShare}
-                  className={`w-10 h-10 md:w-11 md:h-11 rounded-full flex items-center justify-center transition-all duration-300 ${
-                    shareSuccess
-                      ? "bg-green-500 text-white"
-                      : "bg-white/90 backdrop-blur-sm text-[#111] hover:bg-white"
-                  }`}
+                  className="w-10 h-10 md:w-11 md:h-11 rounded-full bg-white/90 backdrop-blur-sm text-[#111] flex items-center justify-center hover:bg-white transition-all duration-300"
                 >
-                  {shareSuccess ? <Check size={16} /> : <Share2 size={16} />}
+                  <Share2 size={16} />
                 </motion.button>
-                {shareSuccess && (
-                  <motion.p
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="absolute -bottom-7 right-0 text-[10px] text-green-600 font-semibold whitespace-nowrap"
-                  >
-                    Link copied!
-                  </motion.p>
-                )}
               </div>
             </div>
 
@@ -280,13 +257,9 @@ export default function ProductDetailPage({ product, onBack, onProductClick }: P
               <motion.button
                 whileTap={{ scale: 0.9 }}
                 onClick={handleShare}
-                className={`w-14 h-14 border flex items-center justify-center transition-all duration-300 ${
-                  shareSuccess
-                    ? "bg-green-500 border-green-500 text-white"
-                    : "border-black/10 text-[#111] hover:border-black"
-                }`}
+                className="w-14 h-14 border border-black/10 text-[#111] flex items-center justify-center hover:border-black transition-all duration-300"
               >
-                {shareSuccess ? <Check size={18} /> : <Share2 size={18} />}
+                <Share2 size={18} />
               </motion.button>
             </div>
 
@@ -334,6 +307,15 @@ export default function ProductDetailPage({ product, onBack, onProductClick }: P
         isOpen={sizeGuideOpen}
         onClose={() => setSizeGuideOpen(false)}
         category={product.category as "tops" | "bottoms"}
+      />
+
+      {/* Share Modal */}
+      <ShareModal
+        isOpen={shareModalOpen}
+        onClose={() => setShareModalOpen(false)}
+        productTitle={product.title}
+        productSlug={product.slug}
+        productPrice={product.price}
       />
     </div>
   );

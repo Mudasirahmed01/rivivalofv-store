@@ -2,8 +2,8 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Product } from "../types";
 import { useCartStore } from "../store/cartStore";
-import { Plus, Share2, Check } from "lucide-react";
-import { shareProduct } from "../lib/shareUtils";
+import { Plus, Share2 } from "lucide-react";
+import ShareModal from "./ShareModal";
 
 interface ProductCardProps {
   product: Product;
@@ -13,22 +13,12 @@ interface ProductCardProps {
 export default function ProductCard({ product, index = 0 }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [showSizes, setShowSizes] = useState(false);
-  const [isShared, setIsShared] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const { addItem, openCart } = useCartStore();
 
-  const handleShare = async (e: React.MouseEvent) => {
+  const handleShare = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const result = await shareProduct({
-      title: product.title,
-      description: product.description,
-      slug: product.slug,
-      price: product.price,
-    });
-
-    if (result.success) {
-      setIsShared(true);
-      setTimeout(() => setIsShared(false), 2000);
-    }
+    setShowShareModal(true);
   };
 
   const handleAddToCart = (size: string) => {
@@ -99,31 +89,15 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
           onClick={handleShare}
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ 
-            opacity: isHovered || isShared ? 1 : 0,
-            scale: isHovered || isShared ? 1 : 0.8
+            opacity: isHovered ? 1 : 0,
+            scale: isHovered ? 1 : 0.8
           }}
           transition={{ duration: 0.2 }}
-          className={`absolute top-3 right-3 md:top-4 md:right-4 w-8 h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center transition-all duration-300 z-10 ${
-            isShared
-              ? "bg-green-500 text-white"
-              : "bg-white/90 backdrop-blur-sm text-[#111] hover:bg-white hover:scale-110"
-          }`}
+          className="absolute top-3 right-3 md:top-4 md:right-4 w-8 h-8 md:w-9 md:h-9 rounded-full bg-white/90 backdrop-blur-sm text-[#111] flex items-center justify-center hover:bg-white hover:scale-110 transition-all duration-300 z-10"
           title="Share this product"
         >
-          {isShared ? <Check size={14} /> : <Share2 size={14} />}
+          <Share2 size={14} />
         </motion.button>
-
-        {/* Share Success Toast */}
-        {isShared && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
-            className="absolute top-14 right-3 md:right-4 bg-black text-white text-[10px] px-2 py-1 rounded whitespace-nowrap z-20"
-          >
-            Link copied!
-          </motion.div>
-        )}
       </div>
 
       {/* Size Picker Dropdown */}
@@ -182,6 +156,15 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
           )}
         </div>
       </div>
+
+      {/* Share Modal */}
+      <ShareModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        productTitle={product.title}
+        productSlug={product.slug}
+        productPrice={product.price}
+      />
     </motion.div>
   );
 }
