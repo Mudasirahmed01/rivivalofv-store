@@ -2,8 +2,10 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Minus, Plus, X, Trash2, Check, Truck, Shield, CreditCard, Banknote } from "lucide-react";
 import { useCartStore } from "../store/cartStore";
+import { useCouponStore } from "../store/couponStore";
 import { formatPKR, USD_TO_PKR } from "../lib/currency";
 import EmailConfirmation from "./EmailConfirmation";
+import CouponInput from "./CouponInput";
 
 interface CheckoutPageProps {
   onBack: () => void;
@@ -13,6 +15,7 @@ type CheckoutStep = "info" | "shipping" | "payment" | "success";
 
 export default function CheckoutPage({ onBack }: CheckoutPageProps) {
   const { items, updateQuantity, removeItem, getTotalPrice, clearCart } = useCartStore();
+  const { calculateDiscount, appliedCoupon } = useCouponStore();
   const [step, setStep] = useState<CheckoutStep>("info");
   const [orderTotal, setOrderTotal] = useState(0);
   const [orderItems, setOrderItems] = useState<typeof items>([]);
@@ -35,9 +38,10 @@ export default function CheckoutPage({ onBack }: CheckoutPageProps) {
   });
 
   const subtotal = getTotalPrice();
+  const discount = calculateDiscount(subtotal);
   const shipping = subtotal >= 200 ? 0 : 15;
-  const tax = Math.round(subtotal * 0.08 * 100) / 100;
-  const total = subtotal + shipping + tax;
+  const tax = Math.round((subtotal - discount) * 0.08 * 100) / 100;
+  const total = subtotal - discount + shipping + tax;
 
   const updateField = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -445,12 +449,23 @@ export default function CheckoutPage({ onBack }: CheckoutPageProps) {
                 ))}
               </div>
 
+              {/* Coupon Input */}
+              <div className="mb-4">
+                <CouponInput />
+              </div>
+
               {/* Totals */}
               <div className="border-t border-black/5 pt-4 space-y-2">
                 <div className="flex justify-between text-xs">
                   <span className="text-[#6E6E73]">Subtotal</span>
                   <span className="text-[#111] font-semibold">{formatPKR(subtotal)}</span>
                 </div>
+                {discount > 0 && (
+                  <div className="flex justify-between text-xs">
+                    <span className="text-green-600 dark:text-green-400">Discount</span>
+                    <span className="text-green-600 dark:text-green-400 font-semibold">-{formatPKR(discount)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-xs">
                   <span className="text-[#6E6E73]">Shipping</span>
                   <span className="text-[#111] font-semibold">

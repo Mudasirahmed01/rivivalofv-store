@@ -24,6 +24,9 @@ import ContactPage from "./components/ContactPage";
 import CookieConsent from "./components/CookieConsent";
 import ToastContainer from "./components/ToastContainer";
 import ErrorBoundary from "./components/ErrorBoundary";
+import ThemeToggle from "./components/ThemeToggle";
+import LiveChat from "./components/LiveChat";
+import SocialProof from "./components/SocialProof";
 import SmoothScroll from "./components/SmoothScroll";
 import { Product } from "./types";
 import { products } from "./data/products";
@@ -147,6 +150,9 @@ export default function App() {
 
       <Footer onNavigate={setCurrentPage} />
       <CookieConsent />
+      <ThemeToggle />
+      <LiveChat />
+      <SocialProof />
     </div>
     </SmoothScroll>
     </ErrorBoundary>
