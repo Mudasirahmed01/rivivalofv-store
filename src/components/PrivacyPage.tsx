@@ -216,7 +216,7 @@ export default function PrivacyPage({ onBack }: PrivacyPageProps) {
                   <span><strong className="text-[#111]">Opt-out:</strong> Unsubscribe from marketing communications at any time</span>
                 </li>
               </ul>
-              <p>To exercise these rights, please contact us at <strong className="text-[#111]">privacy@revivalofv.com</strong>.</p>
+              <p>To exercise these rights, please contact us at <strong className="text-[#111]">rivivalofv@gmail.com</strong>.</p>
             </div>
           </section>
 
@@ -256,7 +256,7 @@ export default function PrivacyPage({ onBack }: PrivacyPageProps) {
             </div>
             <div className="text-sm text-white/70 space-y-2">
               <p>If you have questions about this Privacy Policy or our data practices, please contact us:</p>
-              <p className="mt-3"><strong className="text-white">Email:</strong> privacy@revivalofv.com</p>
+              <p className="mt-3"><strong className="text-white">Email:</strong> rivivalofv@gmail.com</p>
               <p><strong className="text-white">Address:</strong> REVIVAL OF V, Lahore, Pakistan</p>
             </div>
           </section>

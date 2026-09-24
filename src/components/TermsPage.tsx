@@ -171,7 +171,7 @@ export default function TermsPage({ onBack }: TermsPageProps) {
             <h2 className="text-lg md:text-xl font-bold mb-3">Contact Us</h2>
             <div className="text-sm text-white/70 space-y-2">
               <p>If you have any questions about these Terms, please contact us:</p>
-              <p className="mt-3"><strong className="text-white">Email:</strong> legal@revivalofv.com</p>
+              <p className="mt-3"><strong className="text-white">Email:</strong> rivivalofv@gmail.com</p>
               <p><strong className="text-white">Address:</strong> REVIVAL OF V, Lahore, Pakistan</p>
             </div>
           </section>

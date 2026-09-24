@@ -205,7 +205,7 @@ export default function ShippingReturns({ onBack }: ShippingReturnsProps) {
             <div>
               <h3 className="text-base font-bold text-[#111] mb-2">How to Initiate a Return</h3>
               <ol className="space-y-2 ml-4 list-decimal">
-                <li>Contact our support team at <strong className="text-[#111]">support@revivalofv.com</strong> or WhatsApp: <strong className="text-[#111]">+92 300 1234567</strong></li>
+                <li>Contact our support team at <strong className="text-[#111]">rivivalofv@gmail.com</strong> or WhatsApp: <strong className="text-[#111]">+92 300 1234567</strong></li>
                 <li>Provide your order number and reason for return</li>
                 <li>Receive a Return Authorization (RA) number</li>
                 <li>Pack the item securely in original packaging</li>
@@ -252,7 +252,7 @@ export default function ShippingReturns({ onBack }: ShippingReturnsProps) {
           </div>
 
           <div className="space-y-4 text-sm text-[#6E6E73] leading-relaxed">
-            <p>We only replace items if they are defective or damaged. If you need to exchange it for the same item, send us an email at <strong className="text-[#111]">support@revivalofv.com</strong> and we'll guide you through the process.</p>
+            <p>We only replace items if they are defective or damaged. If you need to exchange it for the same item, send us an email at <strong className="text-[#111]">rivivalofv@gmail.com</strong> and we'll guide you through the process.</p>
             <p>For size exchanges, we recommend returning the original item and placing a new order for the correct size. This ensures faster processing.</p>
           </div>
         </motion.section>
@@ -271,7 +271,7 @@ export default function ShippingReturns({ onBack }: ShippingReturnsProps) {
             <h2 className="text-xl md:text-2xl font-bold">Need Help?</h2>
           </div>
           <div className="space-y-3 text-sm text-white/70">
-            <p><strong className="text-white">Email:</strong> support@revivalofv.com</p>
+            <p><strong className="text-white">Email:</strong> rivivalofv@gmail.com</p>
             <p><strong className="text-white">WhatsApp:</strong> +92 300 1234567</p>
             <p><strong className="text-white">Hours:</strong> Mon-Sat, 10:00 AM - 8:00 PM (PKT)</p>
             <p className="text-xs text-white/50 mt-4">We aim to respond to all inquiries within 24 hours.</p>
