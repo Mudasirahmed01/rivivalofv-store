@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Minus, Plus, ShoppingBag, Share2, Truck, Shield, RotateCcw, Check, Link2 } from "lucide-react";
+import { ArrowLeft, Minus, Plus, ShoppingBag, Share2, Truck, Shield, RotateCcw, Check } from "lucide-react";
 import { Product } from "../types";
 import { useCartStore } from "../store/cartStore";
 import { products } from "../data/products";
 import ProductCard from "./ProductCard";
 import SizeGuide from "./SizeGuide";
+import { shareProduct } from "../lib/shareUtils";
 
 interface ProductDetailPageProps {
   product: Product;
@@ -36,38 +37,16 @@ export default function ProductDetailPage({ product, onBack, onProductClick }: P
   };
 
   const handleShare = async () => {
-    const shareData = {
+    const result = await shareProduct({
       title: product.title,
-      text: `Check out ${product.title} — $${product.price} at REVIVAL OF 5`,
-      url: window.location.href,
-    };
+      description: product.description,
+      slug: product.slug,
+      price: product.price,
+    });
 
-    // Try Web Share API first (mobile native share)
-    if (navigator.share) {
-      try {
-        await navigator.share(shareData);
-        setShareSuccess(true);
-        setTimeout(() => setShareSuccess(false), 2000);
-      } catch (err) {
-        // User cancelled, do nothing
-      }
-    } else {
-      // Fallback: copy link to clipboard
-      try {
-        await navigator.clipboard.writeText(window.location.href);
-        setShareSuccess(true);
-        setTimeout(() => setShareSuccess(false), 2000);
-      } catch (err) {
-        // Fallback for older browsers
-        const input = document.createElement("input");
-        input.value = window.location.href;
-        document.body.appendChild(input);
-        input.select();
-        document.execCommand("copy");
-        document.body.removeChild(input);
-        setShareSuccess(true);
-        setTimeout(() => setShareSuccess(false), 2000);
-      }
+    if (result.success) {
+      setShareSuccess(true);
+      setTimeout(() => setShareSuccess(false), 2000);
     }
   };
 

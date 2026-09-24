@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "./components/Header";
 import Hero from "./components/Hero";
 import Marquee from "./components/Marquee";
@@ -16,12 +16,37 @@ import Footer from "./components/Footer";
 import BackToTop from "./components/BackToTop";
 import AccountPage from "./components/AccountPage";
 import { Product } from "./types";
+import { products } from "./data/products";
+import { getProductSlugFromUrl, clearProductHash } from "./lib/shareUtils";
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<"home" | "account" | "all-products" | "product-detail" | "checkout">("home");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
+  // Check URL hash on mount and when it changes
+  useEffect(() => {
+    const checkUrlHash = () => {
+      const slug = getProductSlugFromUrl();
+      if (slug) {
+        const product = products.find((p) => p.slug === slug);
+        if (product) {
+          setSelectedProduct(product);
+          setCurrentPage("product-detail");
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+      }
+    };
+
+    // Check on initial load
+    checkUrlHash();
+
+    // Listen for hash changes
+    window.addEventListener("hashchange", checkUrlHash);
+    return () => window.removeEventListener("hashchange", checkUrlHash);
+  }, []);
+
   const handleBackToHome = () => {
+    clearProductHash();
     setCurrentPage("home");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
