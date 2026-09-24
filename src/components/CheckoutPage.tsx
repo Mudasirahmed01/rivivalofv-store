@@ -241,18 +241,10 @@ export default function CheckoutPage({ onBack }: CheckoutPageProps) {
                   <div className="space-y-4">
                     <div>
                       <label className="text-xs font-bold text-[#111] uppercase tracking-wider mb-2 block">Country</label>
-                      <select
-                        value={formData.country}
-                        onChange={(e) => updateField("country", e.target.value)}
-                        className="w-full px-4 py-3 bg-white border border-black/10 rounded-xl text-sm outline-none focus:border-black transition-colors"
-                      >
-                        <option>Pakistan</option>
-                        <option>United Arab Emirates</option>
-                        <option>Saudi Arabia</option>
-                        <option>United Kingdom</option>
-                        <option>United States</option>
-                        <option>Canada</option>
-                      </select>
+                      <div className="w-full px-4 py-3 bg-[#F5F5F7] border border-black/5 rounded-xl text-sm font-semibold text-[#111] flex items-center gap-2">
+                        <span className="text-lg">🇵🇰</span>
+                        Pakistan
+                      </div>
                     </div>
                     <div>
                       <label className="text-xs font-bold text-[#111] uppercase tracking-wider mb-2 block">Address</label>

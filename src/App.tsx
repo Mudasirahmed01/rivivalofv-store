@@ -15,6 +15,7 @@ import CheckoutPage from "./components/CheckoutPage";
 import Footer from "./components/Footer";
 import BackToTop from "./components/BackToTop";
 import AccountPage from "./components/AccountPage";
+import SmoothScroll from "./components/SmoothScroll";
 import { Product } from "./types";
 import { products } from "./data/products";
 import { getProductSlugFromUrl, clearProductHash } from "./lib/shareUtils";
@@ -68,6 +69,7 @@ export default function App() {
   };
 
   return (
+    <SmoothScroll>
     <div className="min-h-screen bg-[#FAFAFA] font-sans antialiased">
       <Header onAccountClick={() => setCurrentPage("account")} />
       <CartDrawer onCheckout={handleGoToCheckout} />
@@ -108,5 +110,6 @@ export default function App() {
 
       <Footer />
     </div>
+    </SmoothScroll>
   );
 }
