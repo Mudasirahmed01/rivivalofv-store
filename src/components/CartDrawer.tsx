@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Minus, Plus, ShoppingBag } from "lucide-react";
 import { useCartStore } from "../store/cartStore";
+import { formatPKR } from "../lib/currency";
 
 interface CartDrawerProps {
   onCheckout?: () => void;
@@ -92,7 +93,7 @@ export default function CartDrawer({ onCheckout }: CartDrawerProps) {
                           Size: {item.selectedSize}
                         </p>
                         <p className="text-xs md:text-sm font-bold text-[#111] mt-1">
-                          ${item.product.price}
+                          {formatPKR(item.product.price)}
                         </p>
 
                         {/* Quantity Controls */}
@@ -145,13 +146,13 @@ export default function CartDrawer({ onCheckout }: CartDrawerProps) {
                 <div className="flex items-center justify-between">
                   <span className="text-xs md:text-sm text-[#6E6E73]">Subtotal</span>
                   <span className="text-base md:text-lg font-bold text-[#111]">
-                    ${totalPrice.toFixed(2)}
+                    {formatPKR(totalPrice)}
                   </span>
                 </div>
 
                 {/* Shipping Note */}
                 <p className="text-[10px] md:text-xs text-[#6E6E73] text-center">
-                  Free shipping on orders over $200
+                  Free shipping on orders over Rs 50,000
                 </p>
 
                 {/* Checkout Button */}
@@ -164,7 +165,7 @@ export default function CartDrawer({ onCheckout }: CartDrawerProps) {
                   }}
                   className="w-full py-3.5 md:py-4 bg-black text-white rounded-full font-semibold text-xs md:text-sm tracking-wider hover:bg-black/90 transition-colors"
                 >
-                  CHECKOUT — ${totalPrice.toFixed(2)}
+                  CHECKOUT — {formatPKR(totalPrice)}
                 </motion.button>
 
                 {/* Continue Shopping */}

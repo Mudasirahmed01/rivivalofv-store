@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Link2, Check } from "lucide-react";
 import { useState } from "react";
 import { getProductShareUrl } from "../lib/shareUtils";
+import { formatPKR } from "../lib/currency";
 
 interface ShareModalProps {
   isOpen: boolean;
@@ -14,7 +15,7 @@ interface ShareModalProps {
 export default function ShareModal({ isOpen, onClose, productTitle, productSlug, productPrice }: ShareModalProps) {
   const [copied, setCopied] = useState(false);
   const shareUrl = getProductShareUrl(productSlug);
-  const shareText = `Check out ${productTitle} — $${productPrice} at REVIVAL OF 5`;
+  const shareText = `Check out ${productTitle} — ${formatPKR(productPrice)} at REVIVAL OF 5`;
 
   const handleCopyLink = async () => {
     try {
@@ -146,7 +147,7 @@ export default function ShareModal({ isOpen, onClose, productTitle, productSlug,
               <div className="mb-6 p-4 bg-[#F5F5F7] rounded-xl">
                 <p className="text-xs text-[#6E6E73] mb-1">Sharing:</p>
                 <p className="text-sm font-bold text-[#111] truncate">{productTitle}</p>
-                <p className="text-sm text-[#6E6E73]">${productPrice}</p>
+                <p className="text-sm text-[#6E6E73]">{formatPKR(productPrice)}</p>
               </div>
 
               {/* Social Media Grid */}

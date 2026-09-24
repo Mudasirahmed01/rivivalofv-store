@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Minus, Plus, X, Trash2, Check, Truck, Shield, CreditCard, Banknote } from "lucide-react";
 import { useCartStore } from "../store/cartStore";
+import { formatPKR, USD_TO_PKR } from "../lib/currency";
 
 interface CheckoutPageProps {
   onBack: () => void;
@@ -21,7 +22,7 @@ export default function CheckoutPage({ onBack }: CheckoutPageProps) {
     city: "",
     state: "",
     zipCode: "",
-    country: "United States",
+    country: "Pakistan",
     phone: "",
     paymentMethod: "card" as "card" | "cod",
     cardNumber: "",
@@ -94,7 +95,7 @@ export default function CheckoutPage({ onBack }: CheckoutPageProps) {
           </p>
           <div className="p-4 bg-white rounded-xl border border-black/5 mb-6 text-left">
             <p className="text-xs text-[#6E6E73] mb-1">Total Amount</p>
-            <p className="text-2xl font-bold text-[#111]">${total.toFixed(2)}</p>
+            <p className="text-2xl font-bold text-[#111]">{formatPKR(total)}</p>
           </div>
           <button
             onClick={onBack}
@@ -245,11 +246,12 @@ export default function CheckoutPage({ onBack }: CheckoutPageProps) {
                         onChange={(e) => updateField("country", e.target.value)}
                         className="w-full px-4 py-3 bg-white border border-black/10 rounded-xl text-sm outline-none focus:border-black transition-colors"
                       >
+                        <option>Pakistan</option>
+                        <option>United Arab Emirates</option>
+                        <option>Saudi Arabia</option>
+                        <option>United Kingdom</option>
                         <option>United States</option>
                         <option>Canada</option>
-                        <option>United Kingdom</option>
-                        <option>India</option>
-                        <option>Australia</option>
                       </select>
                     </div>
                     <div>
@@ -275,23 +277,40 @@ export default function CheckoutPage({ onBack }: CheckoutPageProps) {
                     <div className="grid grid-cols-3 gap-3">
                       <div>
                         <label className="text-xs font-bold text-[#111] uppercase tracking-wider mb-2 block">City</label>
-                        <input
-                          type="text"
+                        <select
                           value={formData.city}
                           onChange={(e) => updateField("city", e.target.value)}
-                          placeholder="New York"
                           className="w-full px-4 py-3 bg-white border border-black/10 rounded-xl text-sm outline-none focus:border-black transition-colors"
-                        />
+                        >
+                          <option value="">Select City</option>
+                          <option>Karachi</option>
+                          <option>Lahore</option>
+                          <option>Islamabad</option>
+                          <option>Rawalpindi</option>
+                          <option>Faisalabad</option>
+                          <option>Multan</option>
+                          <option>Peshawar</option>
+                          <option>Quetta</option>
+                          <option>Sialkot</option>
+                          <option>Hyderabad</option>
+                        </select>
                       </div>
                       <div>
-                        <label className="text-xs font-bold text-[#111] uppercase tracking-wider mb-2 block">State</label>
-                        <input
-                          type="text"
+                        <label className="text-xs font-bold text-[#111] uppercase tracking-wider mb-2 block">Province</label>
+                        <select
                           value={formData.state}
                           onChange={(e) => updateField("state", e.target.value)}
-                          placeholder="NY"
                           className="w-full px-4 py-3 bg-white border border-black/10 rounded-xl text-sm outline-none focus:border-black transition-colors"
-                        />
+                        >
+                          <option value="">Select Province</option>
+                          <option>Punjab</option>
+                          <option>Sindh</option>
+                          <option>KPK</option>
+                          <option>Balochistan</option>
+                          <option>Islamabad Capital Territory</option>
+                          <option>Gilgit-Baltistan</option>
+                          <option>Azad Kashmir</option>
+                        </select>
                       </div>
                       <div>
                         <label className="text-xs font-bold text-[#111] uppercase tracking-wider mb-2 block">ZIP</label>
@@ -454,7 +473,7 @@ export default function CheckoutPage({ onBack }: CheckoutPageProps) {
                       }`}
                     >
                       <Shield size={14} />
-                      PLACE ORDER — ${total.toFixed(2)}
+                      PLACE ORDER — {formatPKR(total)}
                     </motion.button>
                   </div>
                 </motion.div>
@@ -484,7 +503,7 @@ export default function CheckoutPage({ onBack }: CheckoutPageProps) {
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-semibold text-[#111] truncate">{item.product.title}</p>
                       <p className="text-[10px] text-[#6E6E73]">Size: {item.selectedSize}</p>
-                      <p className="text-xs font-bold text-[#111] mt-0.5">${(item.product.price * item.quantity).toFixed(2)}</p>
+                      <p className="text-xs font-bold text-[#111] mt-0.5">{formatPKR(item.product.price * item.quantity)}</p>
                     </div>
                   </div>
                 ))}
@@ -494,28 +513,28 @@ export default function CheckoutPage({ onBack }: CheckoutPageProps) {
               <div className="border-t border-black/5 pt-4 space-y-2">
                 <div className="flex justify-between text-xs">
                   <span className="text-[#6E6E73]">Subtotal</span>
-                  <span className="text-[#111] font-semibold">${subtotal.toFixed(2)}</span>
+                  <span className="text-[#111] font-semibold">{formatPKR(subtotal)}</span>
                 </div>
                 <div className="flex justify-between text-xs">
                   <span className="text-[#6E6E73]">Shipping</span>
                   <span className="text-[#111] font-semibold">
-                    {shipping === 0 ? "FREE" : `$${shipping.toFixed(2)}`}
+                    {shipping === 0 ? "FREE" : formatPKR(shipping)}
                   </span>
                 </div>
                 <div className="flex justify-between text-xs">
                   <span className="text-[#6E6E73]">Tax</span>
-                  <span className="text-[#111] font-semibold">${tax.toFixed(2)}</span>
+                  <span className="text-[#111] font-semibold">{formatPKR(tax)}</span>
                 </div>
                 <div className="flex justify-between pt-3 border-t border-black/5">
                   <span className="text-sm font-bold text-[#111]">Total</span>
-                  <span className="text-lg font-bold text-[#111]">${total.toFixed(2)}</span>
+                  <span className="text-lg font-bold text-[#111]">{formatPKR(total)}</span>
                 </div>
               </div>
 
               {/* Free Shipping Note */}
               {subtotal < 200 && (
                 <p className="text-[10px] text-[#6E6E73] text-center mt-3">
-                  Add ${(200 - subtotal).toFixed(2)} more for free shipping
+                  Add {formatPKR(200 - subtotal)} more for free shipping
                 </p>
               )}
             </div>

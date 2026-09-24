@@ -7,6 +7,7 @@ import { products } from "../data/products";
 import ProductCard from "./ProductCard";
 import SizeGuide from "./SizeGuide";
 import ShareModal from "./ShareModal";
+import { formatPKR } from "../lib/currency";
 
 interface ProductDetailPageProps {
   product: Product;
@@ -140,15 +141,15 @@ export default function ProductDetailPage({ product, onBack, onProductClick }: P
             {/* Price */}
             <div className="flex items-baseline gap-3 mb-6">
               <span className="text-2xl md:text-3xl font-bold text-[#111]">
-                ${product.price}
+                {formatPKR(product.price)}
               </span>
               {product.compareAtPrice && (
                 <>
                   <span className="text-base md:text-lg text-[#6E6E73] line-through">
-                    ${product.compareAtPrice}
+                    {formatPKR(product.compareAtPrice)}
                   </span>
                   <span className="text-sm font-bold text-red-500">
-                    Save ${product.compareAtPrice - product.price}
+                    Save {formatPKR(product.compareAtPrice - product.price)}
                   </span>
                 </>
               )}

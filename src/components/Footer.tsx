@@ -146,7 +146,7 @@ export default function Footer() {
             © 2026 REVIVAL OF 5. All rights reserved.
           </p>
           <div className="flex items-center gap-4 md:gap-6">
-            <span className="text-[10px] md:text-xs text-white/25 cursor-pointer hover:text-white/50 transition-colors">USD $</span>
+            <span className="text-[10px] md:text-xs text-white/25 cursor-pointer hover:text-white/50 transition-colors">PKR Rs</span>
             <span className="text-[10px] md:text-xs text-white/25 cursor-pointer hover:text-white/50 transition-colors">English</span>
           </div>
         </div>

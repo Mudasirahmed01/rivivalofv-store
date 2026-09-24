@@ -37,6 +37,7 @@ export default function Header({ onAccountClick }: HeaderProps) {
     "BEST SELLERS",
     "SHIRTS",
     "PANTS",
+    "SIZE GUIDE",
   ];
 
   return (

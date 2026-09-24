@@ -4,6 +4,7 @@ import { Product } from "../types";
 import { useCartStore } from "../store/cartStore";
 import { Plus, Share2 } from "lucide-react";
 import ShareModal from "./ShareModal";
+import { formatPKR } from "../lib/currency";
 
 interface ProductCardProps {
   product: Product;
@@ -147,11 +148,11 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
         {/* Price */}
         <div className="flex items-baseline gap-1.5 mt-1.5">
           <span className="text-xs md:text-sm font-bold text-[#111]">
-            ${product.price}
+            {formatPKR(product.price)}
           </span>
           {product.compareAtPrice && (
             <span className="text-[10px] md:text-xs text-[#6E6E73] line-through">
-              ${product.compareAtPrice}
+              {formatPKR(product.compareAtPrice)}
             </span>
           )}
         </div>
