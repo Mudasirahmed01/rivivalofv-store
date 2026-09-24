@@ -8,16 +8,22 @@ import ProductGrid from "./components/ProductGrid";
 import BentoGrid from "./components/BentoGrid";
 import BestSellers from "./components/BestSellers";
 import FeaturedProducts from "./components/FeaturedProducts";
+import AllProductsPage from "./components/AllProductsPage";
 import CartDrawer from "./components/CartDrawer";
 import Footer from "./components/Footer";
 import BackToTop from "./components/BackToTop";
 import AccountPage from "./components/AccountPage";
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState<"home" | "account">("home");
+  const [currentPage, setCurrentPage] = useState<"home" | "account" | "all-products">("home");
 
   const handleBackToHome = () => {
     setCurrentPage("home");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleViewAllProducts = () => {
+    setCurrentPage("all-products");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -27,7 +33,7 @@ export default function App() {
       <CartDrawer />
       <BackToTop />
       
-      {currentPage === "home" ? (
+      {currentPage === "home" && (
         <main>
           {/* Section 1: Hero Carousel Banner */}
           <Hero />
@@ -50,11 +56,17 @@ export default function App() {
           {/* Section 5: Best Sellers Horizontal Carousel */}
           <BestSellers />
           
-          {/* Section 6: Full Catalog with Category Filtering */}
-          <FeaturedProducts />
+          {/* Section 6: Complete Collection (10 Products + View All Link) */}
+          <FeaturedProducts onViewAll={handleViewAllProducts} />
         </main>
-      ) : (
+      )}
+
+      {currentPage === "account" && (
         <AccountPage onBack={handleBackToHome} />
+      )}
+
+      {currentPage === "all-products" && (
+        <AllProductsPage onBack={handleBackToHome} />
       )}
 
       <Footer />

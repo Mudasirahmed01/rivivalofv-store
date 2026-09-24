@@ -22,7 +22,6 @@ export default function Header({ onAccountClick }: HeaderProps) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Prevent body scroll when menu is open
   useEffect(() => {
     if (menuOpen || searchOpen) {
       document.body.style.overflow = "hidden";
@@ -53,7 +52,7 @@ export default function Header({ onAccountClick }: HeaderProps) {
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
       >
         <div className="max-w-[1440px] mx-auto px-4 md:px-6 h-14 md:h-[72px] flex items-center justify-between">
-          {/* Left: Burger + Brand */}
+          {/* Left: Burger + Brand Logo */}
           <div className="flex items-center gap-3 md:gap-6">
             <button
               onClick={() => setMenuOpen(true)}
@@ -64,11 +63,23 @@ export default function Header({ onAccountClick }: HeaderProps) {
               <span className="block w-[12px] md:w-[16px] h-[1.5px] md:h-[2px] bg-[#111] transition-all duration-300 group-hover:w-[22px]" />
               <span className="block w-[18px] md:w-[22px] h-[1.5px] md:h-[2px] bg-[#111] transition-all duration-300 group-hover:w-[22px]" />
             </button>
-            <a
-              href="/"
-              className="text-[#111] font-bold text-xs md:text-lg tracking-[0.12em] md:tracking-[0.15em] hover:opacity-70 transition-opacity"
-            >
-              REVIVAL OF 5
+
+            {/* Logo - Mobile: Image, Desktop: Text */}
+            <a href="/" className="flex items-center">
+              {/* Mobile Logo - Image */}
+              <div className="md:hidden h-8 w-8 relative">
+                <img
+                  src="https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=100&h=100&fit=crop&crop=center"
+                  alt="REVIVAL OF 5"
+                  className="w-full h-full object-cover rounded-full"
+                />
+                <div className="absolute inset-0 rounded-full border border-black/10" />
+              </div>
+              
+              {/* Desktop Logo - Text */}
+              <span className="hidden md:block text-[#111] font-bold text-lg tracking-[0.15em] hover:opacity-70 transition-opacity">
+                REVIVAL OF 5
+              </span>
             </a>
           </div>
 
@@ -123,9 +134,19 @@ export default function Header({ onAccountClick }: HeaderProps) {
           >
             <div className="max-w-[1440px] mx-auto px-4 md:px-6 h-full flex flex-col">
               <div className="h-14 md:h-[72px] flex items-center justify-between">
-                <span className="text-[#111] font-bold text-xs md:text-lg tracking-[0.12em] md:tracking-[0.15em]">
-                  REVIVAL OF 5
-                </span>
+                {/* Mobile: Image, Desktop: Text */}
+                <div className="flex items-center">
+                  <div className="md:hidden h-8 w-8 relative">
+                    <img
+                      src="https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=100&h=100&fit=crop&crop=center"
+                      alt="REVIVAL OF 5"
+                      className="w-full h-full object-cover rounded-full"
+                    />
+                  </div>
+                  <span className="hidden md:block text-[#111] font-bold text-lg tracking-[0.15em]">
+                    REVIVAL OF 5
+                  </span>
+                </div>
                 <button
                   onClick={() => setMenuOpen(false)}
                   className="p-2 hover:opacity-70 transition-opacity"
