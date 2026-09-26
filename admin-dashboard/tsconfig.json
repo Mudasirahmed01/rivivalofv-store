@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true
+  },
+  "include": ["src", "../src/components/AdminDashboard.tsx", "../src/components/AdminProductForm.tsx", "../src/components/AdminContentManager.tsx", "../src/lib/backend.ts", "../src/lib/cloudinary.ts", "../src/lib/supabaseClient.ts", "../src/lib/currency.ts", "../src/types/index.ts"]
+}
