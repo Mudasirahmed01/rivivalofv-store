@@ -57,6 +57,10 @@ export default function CheckoutPage({ onBack }: CheckoutPageProps) {
 
   const handlePlaceOrder = async () => {
     if (placingOrder) return;
+    if (items.some((item) => item.product.variants.length > 0 && !item.selectedSize)) {
+      setOrderError("Please select a size for each product that requires one.");
+      return;
+    }
     setOrderError("");
     setPlacingOrder(true);
 

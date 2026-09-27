@@ -37,11 +37,12 @@ export default function ProductDetailPage({ product, onBack, onProductClick }: P
   const [zoomOpen, setZoomOpen] = useState(false);
   const { addItem, openCart } = useCartStore();
   const toast = useToastStore();
+  const requiresSize = product.variants.length > 0;
 
   const handleAddToCart = () => {
-    if (selectedSize) {
+    if (!requiresSize || selectedSize) {
       for (let i = 0; i < quantity; i++) {
-        addItem(product, selectedSize);
+        addItem(product, selectedSize || "");
       }
       setAddedToCart(true);
       toast.success(`Added to bag!`);
@@ -229,7 +230,7 @@ export default function ProductDetailPage({ product, onBack, onProductClick }: P
             </div>
 
             {/* Size Selector */}
-            <div className="mb-6">
+            {requiresSize && <div className="mb-6">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-xs font-bold text-[#111] uppercase tracking-wider">
                   Select Size
@@ -256,7 +257,7 @@ export default function ProductDetailPage({ product, onBack, onProductClick }: P
                   </button>
                 ))}
               </div>
-            </div>
+            </div>}
 
             {/* Quantity Selector */}
             <div className="mb-6">
@@ -285,11 +286,11 @@ export default function ProductDetailPage({ product, onBack, onProductClick }: P
               <motion.button
                 whileTap={{ scale: 0.97 }}
                 onClick={handleAddToCart}
-                disabled={!selectedSize}
+                disabled={requiresSize && !selectedSize}
                 className={`flex-1 py-4 font-bold text-sm tracking-wider flex items-center justify-center gap-2 transition-all duration-300 ${
                   addedToCart
                     ? "bg-green-500 text-white"
-                    : selectedSize
+                    : !requiresSize || selectedSize
                     ? "bg-black text-white hover:bg-black/90"
                     : "bg-black/20 text-white/60 cursor-not-allowed"
                 }`}
@@ -302,7 +303,7 @@ export default function ProductDetailPage({ product, onBack, onProductClick }: P
                 ) : (
                   <>
                     <ShoppingBag size={16} />
-                    {selectedSize ? "ADD TO BAG" : "SELECT A SIZE"}
+                    {!requiresSize || selectedSize ? "ADD TO BAG" : "SELECT A SIZE"}
                   </>
                 )}
               </motion.button>

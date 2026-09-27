@@ -34,16 +34,25 @@ import ShirtsPage from "./components/ShirtsPage";
 import PantsPage from "./components/PantsPage";
 import SmoothScroll from "./components/SmoothScroll";
 import { Product } from "./types";
-import { getProductSlugFromUrl, clearProductHash } from "./lib/shareUtils";
+import { getProductSlugFromUrl } from "./lib/shareUtils";
 import BackendService from "./lib/backend";
 
+type StorePage = "home" | "account" | "all-products" | "product-detail" | "checkout" | "wishlist" | "shipping" | "terms" | "privacy" | "contact" | "auth" | "new-releases" | "best-sellers" | "shirts" | "pants";
+
+const storePages: StorePage[] = ["home", "account", "all-products", "checkout", "wishlist", "shipping", "terms", "privacy", "contact", "auth", "new-releases", "best-sellers", "shirts", "pants"];
+
+const getPageFromUrl = (): StorePage => {
+  const match = window.location.hash.match(/^#page\/([^/]+)$/);
+  const page = match?.[1] as StorePage | undefined;
+  return page && storePages.includes(page) ? page : "home";
+};
+
 export default function App() {
-  const [currentPage, setCurrentPage] = useState<"home" | "account" | "all-products" | "product-detail" | "checkout" | "wishlist" | "shipping" | "terms" | "privacy" | "contact" | "auth" | "new-releases" | "best-sellers" | "shirts" | "pants">("home");
+  const [currentPage, setCurrentPage] = useState<StorePage>(getPageFromUrl);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
-  // Check URL hash on mount and when it changes
   useEffect(() => {
-    const checkUrlHash = async () => {
+    const syncPageFromUrl = async () => {
       const slug = getProductSlugFromUrl();
       if (slug) {
         const product = await BackendService.getProductBySlug(slug);
@@ -52,41 +61,55 @@ export default function App() {
           setCurrentPage("product-detail");
           window.scrollTo({ top: 0, behavior: "smooth" });
         }
+        return;
       }
+
+      setSelectedProduct(null);
+      setCurrentPage(getPageFromUrl());
     };
 
-    // Check on initial load
-    checkUrlHash();
-
-    // Listen for hash changes
-    window.addEventListener("hashchange", checkUrlHash);
-    return () => window.removeEventListener("hashchange", checkUrlHash);
+    syncPageFromUrl();
+    window.addEventListener("hashchange", syncPageFromUrl);
+    window.addEventListener("popstate", syncPageFromUrl);
+    return () => {
+      window.removeEventListener("hashchange", syncPageFromUrl);
+      window.removeEventListener("popstate", syncPageFromUrl);
+    };
   }, []);
 
+  const navigateToPage = (page: StorePage) => {
+    const nextUrl = page === "home"
+      ? window.location.pathname + window.location.search
+      : `#page/${page}`;
+    window.history.pushState(null, "", nextUrl);
+    setCurrentPage(page);
+    setSelectedProduct(null);
+  };
+
   const handleBackToHome = () => {
-    clearProductHash();
-    setCurrentPage("home");
+    navigateToPage("home");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleViewAllProducts = () => {
-    setCurrentPage("all-products");
+    navigateToPage("all-products");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleProductClick = (product: Product) => {
+    window.history.pushState(null, "", `#product/${product.slug}`);
     setSelectedProduct(product);
     setCurrentPage("product-detail");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleGoToCheckout = () => {
-    setCurrentPage("checkout");
+    navigateToPage("checkout");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleGoToWishlist = () => {
-    setCurrentPage("wishlist");
+    navigateToPage("wishlist");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -97,11 +120,11 @@ export default function App() {
       <Header
         onAccountClick={async () => {
           const currentUser = await BackendService.getCurrentUser();
-          setCurrentPage(currentUser ? "account" : "auth");
+          navigateToPage(currentUser ? "account" : "auth");
           window.scrollTo({ top: 0, behavior: "smooth" });
         }}
         onWishlistClick={handleGoToWishlist}
-        onNavigate={(page) => setCurrentPage(page as any)}
+        onNavigate={(page) => navigateToPage(page as StorePage)}
       />
       <CartDrawer onCheckout={handleGoToCheckout} />
       <BackToTop />
@@ -114,7 +137,7 @@ export default function App() {
           <Features />
           <ScrollRevealText />
           <ProductGrid onProductClick={handleProductClick} />
-          <BentoGrid onNavigate={(page) => setCurrentPage(page as any)} />
+          <BentoGrid onNavigate={(page) => navigateToPage(page as StorePage)} />
           <BestSellers onProductClick={handleProductClick} />
           <FeaturedProducts onViewAll={handleViewAllProducts} onProductClick={handleProductClick} />
           <RecentlyViewed onProductClick={handleProductClick} />
@@ -164,7 +187,7 @@ export default function App() {
       {currentPage === "auth" && (
         <AuthPage
           onBack={handleBackToHome}
-          onLoginSuccess={() => setCurrentPage("account")}
+          onLoginSuccess={() => navigateToPage("account")}
         />
       )}
 
@@ -184,7 +207,7 @@ export default function App() {
         <PantsPage onBack={handleBackToHome} onProductClick={handleProductClick} />
       )}
 
-      <Footer onNavigate={setCurrentPage} />
+      <Footer onNavigate={navigateToPage} />
       <CookieConsent />
       <ThemeToggle />
       <LiveChat />
