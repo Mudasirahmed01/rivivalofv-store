@@ -580,6 +580,7 @@ class BackendService {
     const newOrder = {
       id: crypto.randomUUID(),
       user_id: user?.id || null,
+      customer_email: orderData.email,
       items: orderData.items,
       subtotal: subtotal,
       discount: orderData.discount || 0,
