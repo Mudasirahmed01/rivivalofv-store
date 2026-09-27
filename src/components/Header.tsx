@@ -17,11 +17,27 @@ interface HeaderProps {
   disabledPages?: string[];
 }
 
+interface MenuEntry {
+  id: string;
+  label: string;
+  destination: string;
+  type: 'link' | 'dropdown';
+  active: boolean;
+  children: MenuEntry[];
+}
+
+const defaultMenu = (categories: Array<{ key: string; label: string }>): MenuEntry[] => [
+  { id: 'nav-home', label: 'HOME', destination: 'home', type: 'link', active: true, children: [] },
+  { id: 'nav-new-releases', label: 'NEW RELEASES', destination: 'new-releases', type: 'link', active: true, children: [] },
+  { id: 'nav-best-sellers', label: 'BEST SELLERS', destination: 'best-sellers', type: 'link', active: true, children: [] },
+  { id: 'nav-categories', label: 'CATEGORIES', destination: '', type: 'dropdown', active: true, children: categories.map((category) => ({ id: `category-${category.key}`, label: category.label.toUpperCase(), destination: `category:${category.key}`, type: 'link', active: true, children: [] })) },
+];
+
 export default function Header({ onAccountClick, onWishlistClick, onNavigate, disabledCategories = [], disabledSections = [], disabledPages = [] }: HeaderProps) {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [categoryMenuOpen, setCategoryMenuOpen] = useState(false);
-  const [catalogCategories, setCatalogCategories] = useState<Array<{ key: string; label: string; active: boolean }>>([]);
+  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+  const [menuItems, setMenuItems] = useState<MenuEntry[]>([]);
   const [searchOpen, setSearchOpen] = useState(false);
   const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
   const { toggleCart, getTotalItems } = useCartStore();
@@ -41,7 +57,10 @@ export default function Header({ onAccountClick, onWishlistClick, onNavigate, di
 
   useEffect(() => {
     BackendService.getStoreSettings().then((settings) => {
-      setCatalogCategories((settings.catalog_options?.categories || []).filter((category: { active?: boolean }) => category.active));
+      const activeCategories = (settings.catalog_options?.categories || []).filter((category: { active?: boolean }) => category.active);
+      setMenuItems(Array.isArray(settings.storefront_navigation?.items)
+        ? settings.storefront_navigation.items
+        : defaultMenu(activeCategories));
     });
   }, []);
 
@@ -54,16 +73,19 @@ export default function Header({ onAccountClick, onWishlistClick, onNavigate, di
     return () => { document.body.style.overflow = ""; };
   }, [menuOpen, searchOpen]);
 
-  const navLinks = [
-    { label: "HOME", page: "home" },
-    ...(!disabledSections.includes('new-releases') && !disabledPages.includes('new-releases') ? [{ label: "NEW RELEASES", page: "new-releases" }] : []),
-    ...(!disabledSections.includes('best-sellers') && !disabledPages.includes('best-sellers') ? [{ label: "BEST SELLERS", page: "best-sellers" }] : []),
-  ].filter((link) => !disabledPages.includes(link.page));
-  const categoryLinks = !disabledPages.includes('all-products')
-    ? catalogCategories
-      .filter((category) => !disabledCategories.includes(category.key))
-      .map((category) => ({ label: category.label.toUpperCase(), page: `category:${category.key}` }))
-    : [];
+  const isDestinationVisible = (destination: string) => {
+    if (disabledPages.includes(destination)) return false;
+    if (destination === 'new-releases' && disabledSections.includes('new-releases')) return false;
+    if (destination === 'best-sellers' && disabledSections.includes('best-sellers')) return false;
+    if (destination.startsWith('category:')) {
+      const category = destination.slice('category:'.length);
+      return !disabledPages.includes('all-products') && !disabledCategories.includes(category);
+    }
+    return true;
+  };
+  const visibleMenuItems = menuItems.filter((item) => item.active && (item.type === 'dropdown'
+    ? item.children.some((child) => child.active && isDestinationVisible(child.destination))
+    : isDestinationVisible(item.destination)));
 
   const handleNavClick = (page: string) => {
     setMenuOpen(false);
@@ -206,54 +228,26 @@ export default function Header({ onAccountClick, onWishlistClick, onNavigate, di
               </div>
               <div className="flex-1 flex flex-col md:flex-row">
                 <nav className="flex-1 flex flex-col justify-center gap-3 overflow-y-auto py-8 md:gap-4">
-                  {navLinks.map((link, i) => (
-                    <motion.a
-                      key={link.page}
-                      href="#"
-                      initial={{ opacity: 0, x: -40 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: i * 0.08, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                      className="text-2xl md:text-5xl font-bold text-[#111] hover:text-[#6E6E73] transition-colors duration-200"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleNavClick(link.page);
-                      }}
-                    >
-                      {link.label}
-                    </motion.a>
+                  {visibleMenuItems.map((item, index) => item.type === 'dropdown' ? (
+                    <div key={item.id}>
+                      <button
+                        type="button"
+                        onClick={() => setOpenDropdownId((open) => open === item.id ? null : item.id)}
+                        aria-expanded={openDropdownId === item.id}
+                        className="flex items-center gap-3 text-2xl font-bold text-[#111] transition-colors hover:text-[#6E6E73] md:text-5xl"
+                      >
+                        {item.label}
+                        <ChevronDown className={`h-6 w-6 transition-transform md:h-8 md:w-8 ${openDropdownId === item.id ? 'rotate-180' : ''}`} />
+                      </button>
+                      <AnimatePresence initial={false}>
+                        {openDropdownId === item.id && <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="flex flex-col gap-3 overflow-hidden pl-4 pt-3 md:pl-8">
+                          {item.children.filter((child) => child.active && isDestinationVisible(child.destination)).map((child) => <button key={child.id} type="button" onClick={() => handleNavClick(child.destination)} className="w-fit text-left text-sm font-semibold text-[#6E6E73] transition-colors hover:text-black md:text-lg">{child.label}</button>)}
+                        </motion.div>}
+                      </AnimatePresence>
+                    </div>
+                  ) : (
+                    <motion.button key={item.id} type="button" initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.08, duration: 0.5, ease: [0.16, 1, 0.3, 1] }} className="w-fit text-left text-2xl font-bold text-[#111] transition-colors hover:text-[#6E6E73] md:text-5xl" onClick={() => handleNavClick(item.destination)}>{item.label}</motion.button>
                   ))}
-                  {categoryLinks.length > 0 && <div>
-                    <button
-                      type="button"
-                      onClick={() => setCategoryMenuOpen((open) => !open)}
-                      aria-expanded={categoryMenuOpen}
-                      className="flex items-center gap-3 text-2xl font-bold text-[#111] transition-colors hover:text-[#6E6E73] md:text-5xl"
-                    >
-                      CATEGORIES
-                      <ChevronDown className={`h-6 w-6 transition-transform md:h-8 md:w-8 ${categoryMenuOpen ? 'rotate-180' : ''}`} />
-                    </button>
-                    <AnimatePresence initial={false}>
-                      {categoryMenuOpen && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          className="flex flex-col gap-3 overflow-hidden pl-4 pt-3 md:pl-8"
-                        >
-                          {categoryLinks.map((link) => (
-                            <button
-                              key={link.page}
-                              type="button"
-                              onClick={() => handleNavClick(link.page)}
-                              className="w-fit text-left text-sm font-semibold text-[#6E6E73] transition-colors hover:text-black md:text-lg"
-                            >
-                              {link.label}
-                            </button>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>}
                 </nav>
                 <div className="flex flex-col justify-end pb-8 md:pb-12 gap-4">
                   <p className="text-xs text-[#6E6E73] uppercase tracking-wider">Follow Us</p>
