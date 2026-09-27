@@ -19,6 +19,12 @@ const defaultMenu = (categories: Array<{ key: string; label: string }>): MenuEnt
 
 const emptyBanner = { pre_title: '', headline: '', subheadline: '', cta: 'SHOP NOW', image_url: '', display_order: 0, is_active: true };
 const emptyCategory = { title: '', subtitle: '', image_url: '', page: 'shirts', display_order: 0, is_active: true };
+const defaultFooterLinks = {
+  brand: [{ label: 'Our Story', destination: 'home', active: true }],
+  shop: [{ label: 'All Products', destination: 'all-products', active: true }, { label: 'New Releases', destination: 'new-releases', active: true }, { label: 'Best Sellers', destination: 'best-sellers', active: true }, { label: 'Shirts', destination: 'shirts', active: true }, { label: 'Pants', destination: 'pants', active: true }],
+  support: [{ label: 'Shipping & Returns', destination: 'shipping', active: true }, { label: 'Contact Us', destination: 'contact', active: true }],
+  legal: [{ label: 'Privacy Policy', destination: 'privacy', active: true }, { label: 'Terms of Service', destination: 'terms', active: true }],
+};
 
 const formatSaveError = (error: unknown) => {
   if (error instanceof Error) return error.message;
@@ -41,6 +47,9 @@ export default function AdminContentManager() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [settings, setSettings] = useState({ free_shipping_threshold: '', delivery_charge: '', tax_rate: '', marquee_items: '', brand_statement: '' });
+  const [authCopy, setAuthCopy] = useState({ login_title: 'Welcome Back', login_tagline: 'Sign in to your account', signup_title: 'Create Account', signup_tagline: 'Join REVIVAL OF V' });
+  const [footerLinks, setFooterLinks] = useState(defaultFooterLinks);
+  const [footerNewsletterText, setFooterNewsletterText] = useState('Get product news and special offers by email.');
   const [catalogOptions, setCatalogOptions] = useState<{ categories: Array<{ key: string; label: string; requiresSize: boolean; active: boolean }>; placements: Array<{ key: string; label: string; active: boolean }> }>({ categories: [], placements: [] });
   const [newCategoryLabel, setNewCategoryLabel] = useState('');
   const [newCategoryRequiresSize, setNewCategoryRequiresSize] = useState(false);
@@ -75,6 +84,9 @@ export default function AdminContentManager() {
         marquee_items: (storeSettings.marquee?.items || []).join('\n'),
         brand_statement: String(storeSettings.brand_statement?.text || 'We do not design apparel for a single season. Revival of V builds architectural silhouettes designed to endure time, movement, and perception.'),
       });
+      setAuthCopy((current) => ({ ...current, ...(storeSettings.auth_copy || {}) }));
+      setFooterLinks(storeSettings.footer_links || defaultFooterLinks);
+      setFooterNewsletterText(String(storeSettings.footer_newsletter?.text || 'Get product news and special offers by email.'));
       setVisibility({
         disabledCategories: Array.isArray(storefrontVisibility.disabled_categories) ? storefrontVisibility.disabled_categories : [],
         disabledSections: Array.isArray(storefrontVisibility.disabled_sections) ? storefrontVisibility.disabled_sections : [],
@@ -115,6 +127,9 @@ export default function AdminContentManager() {
         }),
         BackendService.saveStoreSetting('marquee', { items: settings.marquee_items.split('\n').map((item) => item.trim()).filter(Boolean) }),
         BackendService.saveStoreSetting('brand_statement', { text: settings.brand_statement.trim() }),
+        BackendService.saveStoreSetting('auth_copy', Object.fromEntries(Object.entries(authCopy).map(([key, value]) => [key, value.trim()]))),
+        BackendService.saveStoreSetting('footer_links', footerLinks),
+        BackendService.saveStoreSetting('footer_newsletter', { text: footerNewsletterText.trim() }),
         BackendService.saveStoreSetting('storefront_visibility', {
           disabled_categories: visibility.disabledCategories,
           disabled_sections: visibility.disabledSections,
@@ -173,7 +188,7 @@ export default function AdminContentManager() {
 
   const navigationDestinations = [
     ...pageDestinations.map(([value, label]) => ({ value, label })),
-    ...catalogOptions.categories.map((category) => ({ value: `category:${category.key}`, label: category.label })),
+    ...catalogOptions.categories.filter((category) => category.active).map((category) => ({ value: `category:${category.key}`, label: `Category page — ${category.label}` })),
   ];
 
   const addNavigationItem = () => {
@@ -235,6 +250,8 @@ export default function AdminContentManager() {
       </section>
       <section className="space-y-3 border-t border-black/10 pt-4">
         <h3 className="text-sm font-bold">Hamburger menu</h3>
+        <p className="text-xs text-gray-500">For a category page link, first add and activate that category under Product categories above. It will then appear in the destination list.</p>
+        <p className="text-xs text-gray-500">Category page destinations come from active entries in Catalog Options. Add “Perfumes” there first if it is missing below.</p>
         <div className="grid gap-2 sm:grid-cols-[1fr_10rem_12rem_auto]">
           <input value={newNavigationLabel} onChange={(event) => setNewNavigationLabel(event.target.value)} placeholder="Menu label" className="rounded-xl bg-[#F5F5F7] p-3 text-sm" />
           <select value={newNavigationType} onChange={(event) => setNewNavigationType(event.target.value as 'link' | 'dropdown')} className="rounded-xl bg-[#F5F5F7] p-3 text-sm"><option value="link">Link</option><option value="dropdown">Dropdown</option></select>
@@ -272,6 +289,28 @@ export default function AdminContentManager() {
       <input required type="number" min="0" max="100" step="0.1" value={settings.tax_rate} onChange={(e) => setSettings((current) => ({ ...current, tax_rate: e.target.value }))} placeholder="Tax rate (%)" className="rounded-xl bg-[#F5F5F7] p-3 text-sm" />
       <textarea required value={settings.marquee_items} onChange={(e) => setSettings((current) => ({ ...current, marquee_items: e.target.value }))} placeholder="Marquee item per line" className="min-h-28 rounded-xl bg-[#F5F5F7] p-3 text-sm md:col-span-2" />
       <textarea required value={settings.brand_statement} onChange={(e) => setSettings((current) => ({ ...current, brand_statement: e.target.value }))} placeholder="Homepage brand statement" className="min-h-36 rounded-xl bg-[#F5F5F7] p-3 text-sm md:col-span-2" />
+      <section className="grid gap-3 border-t border-black/10 pt-4 md:col-span-2 md:grid-cols-2">
+        <h3 className="text-sm font-bold md:col-span-2">Sign in and sign up copy</h3>
+        <input value={authCopy.login_title} onChange={(event) => setAuthCopy((current) => ({ ...current, login_title: event.target.value }))} placeholder="Sign in heading" className="rounded-xl bg-[#F5F5F7] p-3 text-sm" />
+        <input value={authCopy.login_tagline} onChange={(event) => setAuthCopy((current) => ({ ...current, login_tagline: event.target.value }))} placeholder="Sign in tagline" className="rounded-xl bg-[#F5F5F7] p-3 text-sm" />
+        <input value={authCopy.signup_title} onChange={(event) => setAuthCopy((current) => ({ ...current, signup_title: event.target.value }))} placeholder="Sign up heading" className="rounded-xl bg-[#F5F5F7] p-3 text-sm" />
+        <input value={authCopy.signup_tagline} onChange={(event) => setAuthCopy((current) => ({ ...current, signup_tagline: event.target.value }))} placeholder="Sign up tagline" className="rounded-xl bg-[#F5F5F7] p-3 text-sm" />
+      </section>
+      <section className="grid gap-3 border-t border-black/10 pt-4 md:col-span-2">
+        <h3 className="text-sm font-bold">Footer newsletter copy</h3>
+        <input value={footerNewsletterText} onChange={(event) => setFooterNewsletterText(event.target.value)} placeholder="Offer/newsletter text" className="rounded-xl bg-[#F5F5F7] p-3 text-sm" />
+        <h3 className="mt-3 text-sm font-bold">Footer links</h3>
+        {Object.entries(footerLinks).map(([group, links]) => <section key={group} className="space-y-2 border-t border-black/5 pt-3">
+          <h4 className="text-xs font-bold uppercase text-gray-500">{group}</h4>
+          {links.map((link, index) => <div key={`${group}-${index}`} className="grid gap-2 sm:grid-cols-[1fr_12rem_auto_auto]">
+            <input value={link.label} onChange={(event) => setFooterLinks((current) => ({ ...current, [group]: current[group as keyof typeof current].map((item, itemIndex) => itemIndex === index ? { ...item, label: event.target.value } : item) }))} className="rounded-lg bg-[#F5F5F7] p-2 text-sm" />
+            <select value={link.destination} onChange={(event) => setFooterLinks((current) => ({ ...current, [group]: current[group as keyof typeof current].map((item, itemIndex) => itemIndex === index ? { ...item, destination: event.target.value } : item) }))} className="rounded-lg bg-[#F5F5F7] p-2 text-sm">{pageDestinations.map(([value, label]) => <option key={value} value={value}>{label}</option>)}{catalogOptions.categories.map((category) => <option key={category.key} value={`category:${category.key}`}>{category.label}</option>)}</select>
+            <label className="flex items-center gap-2 text-xs"><input type="checkbox" checked={link.active} onChange={(event) => setFooterLinks((current) => ({ ...current, [group]: current[group as keyof typeof current].map((item, itemIndex) => itemIndex === index ? { ...item, active: event.target.checked } : item) }))} /> Active</label>
+            <button type="button" onClick={() => setFooterLinks((current) => ({ ...current, [group]: current[group as keyof typeof current].filter((_, itemIndex) => itemIndex !== index) }))} className="text-xs text-red-600">Remove</button>
+          </div>)}
+          <button type="button" onClick={() => setFooterLinks((current) => ({ ...current, [group]: [...current[group as keyof typeof current], { label: '', destination: 'home', active: true }] }))} className="text-xs font-semibold">+ Add {group} link</button>
+        </section>)}
+      </section>
       <fieldset className="grid gap-3 border-t border-black/10 pt-4 md:col-span-2">
         <legend className="px-1 text-sm font-semibold">Storefront visibility</legend>
         <p className="text-xs text-gray-500">Turn sections off without deleting products or content. You can enable them again anytime.</p>
