@@ -580,7 +580,7 @@ class BackendService {
     const newOrder = {
       id: crypto.randomUUID(),
       user_id: user?.id || null,
-      customer_email: orderData.email,
+      customer_email: orderData.email.trim().toLowerCase(),
       items: orderData.items,
       subtotal: subtotal,
       discount: orderData.discount || 0,
@@ -604,7 +604,7 @@ class BackendService {
 
     console.log('✅ Order created successfully');
     const { error: notificationError } = await supabase.functions.invoke('order-confirmation', {
-      body: { email: orderData.email, order: newOrder },
+      body: { email: newOrder.customer_email, order: newOrder },
     });
     if (notificationError) console.warn('Order saved, but confirmation email was not sent:', notificationError.message);
     return { success: true, message: 'Order placed successfully', order: newOrder };
