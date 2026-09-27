@@ -1,11 +1,20 @@
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
+import BackendService from "../lib/backend";
 
-const brandText = "We do not design apparel for a single season. Revival of V builds architectural silhouettes designed to endure time, movement, and perception.";
+const defaultBrandText = "We do not design apparel for a single season. Revival of V builds architectural silhouettes designed to endure time, movement, and perception.";
 
 export default function ScrollRevealText() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const words = brandText.split(" ");
+  const [brandText, setBrandText] = useState(defaultBrandText);
+  const words = brandText.split(/\s+/).filter(Boolean);
+
+  useEffect(() => {
+    BackendService.getStoreSettings().then((settings) => {
+      const savedText = settings.brand_statement?.text?.trim();
+      if (savedText) setBrandText(savedText);
+    });
+  }, []);
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
