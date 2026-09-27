@@ -408,7 +408,14 @@ class BackendService {
       const imageUrl = image
         ? (await uploadToCloudinary(image, 'homepage/categories')).secure_url
         : category.image_url;
-      const payload = { ...category, image_url: imageUrl };
+      const payload = {
+        title: category.title,
+        subtitle: category.subtitle,
+        page: category.page || 'shirts',
+        image_url: imageUrl,
+        display_order: category.display_order,
+        is_active: category.is_active,
+      };
       const query = id
         ? supabase.from('homepage_categories').update(payload).eq('id', id)
         : supabase.from('homepage_categories').insert(payload);
@@ -417,7 +424,7 @@ class BackendService {
       return data;
     } catch (error) {
       console.error('Error saving homepage category:', error);
-      return null;
+      throw error;
     }
   }
 

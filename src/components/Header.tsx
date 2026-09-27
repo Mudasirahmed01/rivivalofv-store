@@ -6,6 +6,7 @@ import { useWishlistStore } from "../store/wishlistStore";
 import AdvancedSearch from "./AdvancedSearch";
 import SizeGuide from "./SizeGuide";
 import { Product } from "../types";
+import BackendService from "../lib/backend";
 
 interface HeaderProps {
   onAccountClick: () => void;
@@ -20,6 +21,7 @@ export default function Header({ onAccountClick, onWishlistClick, onNavigate, di
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [perfumeMenuOpen, setPerfumeMenuOpen] = useState(false);
+  const [catalogCategories, setCatalogCategories] = useState<Array<{ key: string; label: string; active: boolean }>>([]);
   const [searchOpen, setSearchOpen] = useState(false);
   const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
   const { toggleCart, getTotalItems } = useCartStore();
@@ -32,11 +34,15 @@ export default function Header({ onAccountClick, onWishlistClick, onNavigate, di
   };
 
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
-    };
+    const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    BackendService.getStoreSettings().then((settings) => {
+      setCatalogCategories((settings.catalog_options?.categories || []).filter((category: { active?: boolean }) => category.active));
+    });
   }, []);
 
   useEffect(() => {
@@ -50,19 +56,17 @@ export default function Header({ onAccountClick, onWishlistClick, onNavigate, di
 
   const navLinks = [
     { label: "HOME", page: "home" },
-    ...(!disabledSections.includes('new-releases') ? [{ label: "NEW RELEASES", page: "new-releases" }] : []),
-    { label: "BEST SELLERS", page: "best-sellers" },
-    ...(!disabledCategories.includes('tops') ? [{ label: "SHIRTS", page: "shirts" }] : []),
-    ...(!disabledCategories.includes('bottoms') ? [{ label: "PANTS", page: "pants" }] : []),
+    ...(!disabledSections.includes('new-releases') && !disabledPages.includes('new-releases') ? [{ label: "NEW RELEASES", page: "new-releases" }] : []),
+    ...(!disabledSections.includes('best-sellers') && !disabledPages.includes('best-sellers') ? [{ label: "BEST SELLERS", page: "best-sellers" }] : []),
+    ...(!disabledPages.includes('all-products') ? catalogCategories
+      .filter((category) => !category.key.startsWith('perfume') && !disabledCategories.includes(category.key))
+      .map((category) => ({ label: category.label.toUpperCase(), page: `category:${category.key}` })) : []),
   ].filter((link) => !disabledPages.includes(link.page));
+  const perfumeCategories = catalogCategories.filter((category) => category.key.startsWith('perfume') && !disabledCategories.includes(category.key));
   const perfumeLinks = [
-    { label: "MEN'S COLLECTION", page: "category:perfume-men" },
-    { label: "WOMEN'S COLLECTION", page: "category:perfume-women" },
-    { label: "UNISEX COLLECTION", page: "category:perfume-unisex" },
-    { label: "ALL PERFUMES", page: "category:perfumes" },
-  ].filter((link) => !disabledPages.includes('all-products') && (link.page === 'category:perfumes'
-    ? !['perfume-men', 'perfume-women', 'perfume-unisex'].every((category) => disabledCategories.includes(category))
-    : !disabledCategories.includes(link.page.slice('category:'.length))));
+    ...perfumeCategories.map((category) => ({ label: `${category.label.toUpperCase()} COLLECTION`, page: `category:${category.key}` })),
+    ...(perfumeCategories.length > 0 ? [{ label: "ALL PERFUMES", page: "category:perfumes" }] : []),
+  ].filter(() => !disabledPages.includes('all-products'));
 
   const handleNavClick = (page: string) => {
     setMenuOpen(false);
@@ -221,7 +225,7 @@ export default function Header({ onAccountClick, onWishlistClick, onNavigate, di
                       {link.label}
                     </motion.a>
                   ))}
-                  <div>
+                  {perfumeLinks.length > 0 && <div>
                     <button
                       type="button"
                       onClick={() => setPerfumeMenuOpen((open) => !open)}
@@ -252,7 +256,7 @@ export default function Header({ onAccountClick, onWishlistClick, onNavigate, di
                         </motion.div>
                       )}
                     </AnimatePresence>
-                  </div>
+                  </div>}
                 </nav>
                 <div className="flex flex-col justify-end pb-8 md:pb-12 gap-4">
                   <p className="text-xs text-[#6E6E73] uppercase tracking-wider">Follow Us</p>

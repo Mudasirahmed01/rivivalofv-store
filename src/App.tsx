@@ -27,6 +27,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import ThemeToggle from "./components/ThemeToggle";
 import LiveChat from "./components/LiveChat";
 import SocialProof from "./components/SocialProof";
+import DynamicCatalogSections from "./components/DynamicCatalogSections";
 import AuthPage from "./components/AuthPage";
 import NewReleasesPage from "./components/NewReleasesPage";
 import BestSellersPage from "./components/BestSellersPage";
@@ -181,6 +182,7 @@ export default function App() {
           {!storefrontVisibility.disabledSections.includes('best-sellers') && <BestSellers onProductClick={handleProductClick} />}
           {!storefrontVisibility.disabledSections.includes('complete-collection') && !storefrontVisibility.disabledPages.includes('all-products') && <FeaturedProducts onViewAll={handleViewAllProducts} onProductClick={handleProductClick} />}
           {!storefrontVisibility.disabledSections.includes('recently-viewed') && <RecentlyViewed onProductClick={handleProductClick} />}
+          <DynamicCatalogSections onProductClick={handleProductClick} />
         </main>
       )}
 

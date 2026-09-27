@@ -11,7 +11,10 @@ export const getStorefrontVisibility = async (): Promise<StorefrontVisibility> =
   const settings = await BackendService.getStoreSettings();
   const visibility = settings.storefront_visibility || {};
   return {
-    disabledCategories: Array.isArray(visibility.disabled_categories) ? visibility.disabled_categories : [],
+    disabledCategories: [
+      ...(Array.isArray(visibility.disabled_categories) ? visibility.disabled_categories : []),
+      ...(Array.isArray(settings.catalog_options?.categories) ? settings.catalog_options.categories.filter((category: { active?: boolean }) => !category.active).map((category: { key: string }) => category.key) : []),
+    ],
     disabledSections: Array.isArray(visibility.disabled_sections) ? visibility.disabled_sections : [],
     disabledPages: Array.isArray(visibility.disabled_pages) ? visibility.disabled_pages : [],
   };
