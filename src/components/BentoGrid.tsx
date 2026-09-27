@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import BackendService from "../lib/backend";
 
 interface BentoCard {
-  id: number;
+  id: number | string;
   title: string;
   subtitle: string;
   image: string;
@@ -116,8 +116,8 @@ export default function BentoGrid({ onNavigate }: BentoGridProps) {
   const [bentoCards, setBentoCards] = useState<BentoCard[]>([]);
 
   useEffect(() => {
-    BackendService.getHomepageCategories().then((categories) => {
-      if (categories.length > 0) setBentoCards(categories.map((category) => ({
+    Promise.all([BackendService.getHomepageCategories(), BackendService.getProducts()]).then(([categories, products]) => {
+      const cards: BentoCard[] = categories.map((category) => ({
         id: category.id,
         title: category.title,
         subtitle: category.subtitle,
@@ -125,7 +125,20 @@ export default function BentoGrid({ onNavigate }: BentoGridProps) {
         height: category.page === 'shirts' ? 'h-[400px] md:h-[580px]' : 'h-[280px] md:h-[280px]',
         span: category.page === 'shirts' ? 'md:row-span-2' : '',
         page: category.page,
-      })));
+      }));
+      const perfume = products.find((product) => product.category.startsWith('perfume') && product.images[0]?.url);
+      if (perfume && !cards.some((card) => card.page === 'category:perfumes')) {
+        cards.push({
+          id: 'all-perfumes',
+          title: 'PERFUMES',
+          subtitle: 'Explore the fragrance collection',
+          image: perfume.images[0].url,
+          height: 'h-[280px] md:h-[280px]',
+          span: '',
+          page: 'category:perfumes',
+        });
+      }
+      setBentoCards(cards);
     });
   }, []);
   const handleNavigate = (page: string) => {

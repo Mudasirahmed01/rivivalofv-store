@@ -93,7 +93,7 @@ export default function App() {
 
   const handleHomepageCategoryNavigation = (destination: string) => {
     if (destination.startsWith('category:')) {
-      navigateToPage('all-products', destination.slice('category:'.length));
+      navigateToPage('all-products', destination);
     } else {
       navigateToPage(destination as StorePage);
     }
@@ -138,7 +138,7 @@ export default function App() {
           window.scrollTo({ top: 0, behavior: "smooth" });
         }}
         onWishlistClick={handleGoToWishlist}
-        onNavigate={(page) => navigateToPage(page as StorePage)}
+        onNavigate={handleHomepageCategoryNavigation}
       />
       <CartDrawer onCheckout={handleGoToCheckout} />
       <BackToTop />

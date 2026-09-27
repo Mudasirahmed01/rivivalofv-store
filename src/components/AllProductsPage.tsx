@@ -21,14 +21,33 @@ export default function AllProductsPage({ initialCategory = "all", onBack, onPro
   const filteredProducts =
     activeFilter === "all"
       ? products
-      : products.filter((p) => p.category === activeFilter);
+      : activeFilter === "category:perfumes"
+      ? products.filter((product) => product.category.startsWith("perfume"))
+      : products.filter((product) => product.category === (activeFilter.startsWith("category:") ? activeFilter.slice("category:".length) : activeFilter));
   const filterCategories = [
     { label: "All", value: "all" },
+    ...(products.some((product) => product.category.startsWith("perfume")) ? [{ label: "Perfumes", value: "category:perfumes" }] : []),
     ...[...new Set(products.map((product) => product.category))].map((category) => ({
       label: category === "tops" ? "Shirts" : category === "bottoms" ? "Pants" : category.replace(/[_-]/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase()),
-      value: category,
+      value: `category:${category}`,
     })),
   ];
+  const categoryFilter = activeFilter.startsWith("category:") ? activeFilter.slice("category:".length) : activeFilter;
+  const collectionTitle = activeFilter === "all"
+    ? "All Products"
+    : categoryFilter === "perfumes"
+    ? "Perfume Collection"
+    : categoryFilter === "perfume-men"
+    ? "Men's Perfume Collection"
+    : categoryFilter === "perfume-women"
+    ? "Women's Perfume Collection"
+    : categoryFilter === "perfume-unisex"
+    ? "Unisex Perfume Collection"
+    : categoryFilter === "tops"
+    ? "Shirts"
+    : categoryFilter === "bottoms"
+    ? "Pants"
+    : categoryFilter.replace(/[_-]/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] pt-20 md:pt-28 pb-16 px-4 md:px-6">
@@ -46,10 +65,10 @@ export default function AllProductsPage({ initialCategory = "all", onBack, onPro
             FULL CATALOG
           </p>
           <h1 className="text-3xl md:text-5xl font-bold text-[#111] mb-3 md:mb-4">
-            All Products
+            {collectionTitle}
           </h1>
           <p className="text-sm md:text-base text-[#6E6E73] max-w-xl">
-            Explore the complete collection across every product category.
+            {activeFilter === "all" ? "Explore the complete collection across every product category." : `Explore products in the ${collectionTitle.toLowerCase()}.`}
           </p>
         </div>
 

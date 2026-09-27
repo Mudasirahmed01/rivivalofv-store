@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShoppingBag, Search, User, X, Heart } from "lucide-react";
+import { ShoppingBag, Search, User, X, Heart, ChevronDown } from "lucide-react";
 import { useCartStore } from "../store/cartStore";
 import { useWishlistStore } from "../store/wishlistStore";
 import AdvancedSearch from "./AdvancedSearch";
@@ -16,6 +16,7 @@ interface HeaderProps {
 export default function Header({ onAccountClick, onWishlistClick, onNavigate }: HeaderProps) {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [perfumeMenuOpen, setPerfumeMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
   const { toggleCart, getTotalItems } = useCartStore();
@@ -50,6 +51,12 @@ export default function Header({ onAccountClick, onWishlistClick, onNavigate }: 
     { label: "BEST SELLERS", page: "best-sellers" },
     { label: "SHIRTS", page: "shirts" },
     { label: "PANTS", page: "pants" },
+  ];
+  const perfumeLinks = [
+    { label: "MEN'S COLLECTION", page: "category:perfume-men" },
+    { label: "WOMEN'S COLLECTION", page: "category:perfume-women" },
+    { label: "UNISEX COLLECTION", page: "category:perfume-unisex" },
+    { label: "ALL PERFUMES", page: "category:perfumes" },
   ];
 
   const handleNavClick = (page: string) => {
@@ -192,7 +199,7 @@ export default function Header({ onAccountClick, onWishlistClick, onNavigate }: 
                 </button>
               </div>
               <div className="flex-1 flex flex-col md:flex-row">
-                <nav className="flex-1 flex flex-col justify-center gap-3 md:gap-4 py-8">
+                <nav className="flex-1 flex flex-col justify-center gap-3 overflow-y-auto py-8 md:gap-4">
                   {navLinks.map((link, i) => (
                     <motion.a
                       key={link.page}
@@ -209,6 +216,38 @@ export default function Header({ onAccountClick, onWishlistClick, onNavigate }: 
                       {link.label}
                     </motion.a>
                   ))}
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() => setPerfumeMenuOpen((open) => !open)}
+                      aria-expanded={perfumeMenuOpen}
+                      className="flex items-center gap-3 text-2xl font-bold text-[#111] transition-colors hover:text-[#6E6E73] md:text-5xl"
+                    >
+                      PERFUMES
+                      <ChevronDown className={`h-6 w-6 transition-transform md:h-8 md:w-8 ${perfumeMenuOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                    <AnimatePresence initial={false}>
+                      {perfumeMenuOpen && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="flex flex-col gap-3 overflow-hidden pl-4 pt-3 md:pl-8"
+                        >
+                          {perfumeLinks.map((link) => (
+                            <button
+                              key={link.page}
+                              type="button"
+                              onClick={() => handleNavClick(link.page)}
+                              className="w-fit text-left text-sm font-semibold text-[#6E6E73] transition-colors hover:text-black md:text-lg"
+                            >
+                              {link.label}
+                            </button>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
                 </nav>
                 <div className="flex flex-col justify-end pb-8 md:pb-12 gap-4">
                   <p className="text-xs text-[#6E6E73] uppercase tracking-wider">Follow Us</p>
