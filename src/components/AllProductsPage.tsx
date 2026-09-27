@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
 import ProductCard from "./ProductCard";
@@ -7,13 +7,16 @@ import { useProducts } from "../hooks/useProducts";
 import { ProductCardSkeleton } from "./SkeletonLoader";
 
 interface AllProductsPageProps {
+  initialCategory?: string;
   onBack: () => void;
   onProductClick: (product: Product) => void;
 }
 
-export default function AllProductsPage({ onBack, onProductClick }: AllProductsPageProps) {
-  const [activeFilter, setActiveFilter] = useState("all");
+export default function AllProductsPage({ initialCategory = "all", onBack, onProductClick }: AllProductsPageProps) {
+  const [activeFilter, setActiveFilter] = useState(initialCategory);
   const { products, loading } = useProducts();
+
+  useEffect(() => setActiveFilter(initialCategory), [initialCategory]);
 
   const filteredProducts =
     activeFilter === "all"

@@ -42,9 +42,14 @@ type StorePage = "home" | "account" | "all-products" | "product-detail" | "check
 const storePages: StorePage[] = ["home", "account", "all-products", "checkout", "wishlist", "shipping", "terms", "privacy", "contact", "auth", "new-releases", "best-sellers", "shirts", "pants"];
 
 const getPageFromUrl = (): StorePage => {
-  const match = window.location.hash.match(/^#page\/([^/]+)$/);
+  const match = window.location.hash.match(/^#page\/([^/?]+)/);
   const page = match?.[1] as StorePage | undefined;
   return page && storePages.includes(page) ? page : "home";
+};
+
+const getCollectionCategoryFromUrl = () => {
+  const hashQuery = window.location.hash.split('?')[1] || '';
+  return new URLSearchParams(hashQuery).get('category') || 'all';
 };
 
 export default function App() {
@@ -77,13 +82,22 @@ export default function App() {
     };
   }, []);
 
-  const navigateToPage = (page: StorePage) => {
+  const navigateToPage = (page: StorePage, category?: string) => {
     const nextUrl = page === "home"
       ? window.location.pathname + window.location.search
-      : `#page/${page}`;
+      : `#page/${page}${category ? `?category=${encodeURIComponent(category)}` : ''}`;
     window.history.pushState(null, "", nextUrl);
     setCurrentPage(page);
     setSelectedProduct(null);
+  };
+
+  const handleHomepageCategoryNavigation = (destination: string) => {
+    if (destination.startsWith('category:')) {
+      navigateToPage('all-products', destination.slice('category:'.length));
+    } else {
+      navigateToPage(destination as StorePage);
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleBackToHome = () => {
@@ -137,7 +151,7 @@ export default function App() {
           <Features />
           <ScrollRevealText />
           <ProductGrid onProductClick={handleProductClick} onViewAll={handleViewAllProducts} />
-          <BentoGrid onNavigate={(page) => navigateToPage(page as StorePage)} />
+          <BentoGrid onNavigate={handleHomepageCategoryNavigation} />
           <BestSellers onProductClick={handleProductClick} />
           <FeaturedProducts onViewAll={handleViewAllProducts} onProductClick={handleProductClick} />
           <RecentlyViewed onProductClick={handleProductClick} />
@@ -149,7 +163,7 @@ export default function App() {
       )}
 
       {currentPage === "all-products" && (
-        <AllProductsPage onBack={handleBackToHome} onProductClick={handleProductClick} />
+        <AllProductsPage initialCategory={getCollectionCategoryFromUrl()} onBack={handleBackToHome} onProductClick={handleProductClick} />
       )}
 
       {currentPage === "product-detail" && selectedProduct && (
