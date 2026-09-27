@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import { motion, useMotionValue, useSpring } from "framer-motion";
 import { useEffect } from "react";
 import BackendService from "../lib/backend";
-import { filterVisibleProducts, getStorefrontVisibility, isStorefrontCategoryVisible } from "../lib/storefrontVisibility";
+import { getStorefrontVisibility, isStorefrontCategoryVisible } from "../lib/storefrontVisibility";
 
 interface BentoCard {
   id: number | string;
@@ -120,7 +120,7 @@ export default function BentoGrid({ onNavigate, disabledPages = noDisabledPages 
   const [bentoCards, setBentoCards] = useState<BentoCard[]>([]);
 
   useEffect(() => {
-    Promise.all([BackendService.getHomepageCategories(), BackendService.getProducts(), getStorefrontVisibility()]).then(([categories, products, visibility]) => {
+    Promise.all([BackendService.getHomepageCategories(), getStorefrontVisibility()]).then(([categories, visibility]) => {
       const visibleCategories = categories.filter((category) => {
         if (category.page.startsWith('category:') && disabledPages.includes('all-products')) return false;
         if (category.page === 'shirts') return isStorefrontCategoryVisible('tops', visibility);
@@ -138,18 +138,6 @@ export default function BentoGrid({ onNavigate, disabledPages = noDisabledPages 
         span: category.page === 'shirts' ? 'md:row-span-2' : '',
         page: category.page,
       }));
-      const perfume = filterVisibleProducts(products, visibility).find((product) => product.category.startsWith('perfume') && product.images[0]?.url);
-      if (perfume && !cards.some((card) => card.page === 'category:perfumes')) {
-        cards.push({
-          id: 'all-perfumes',
-          title: 'PERFUMES',
-          subtitle: 'Explore the fragrance collection',
-          image: perfume.images[0].url,
-          height: 'h-[280px] md:h-[280px]',
-          span: '',
-          page: 'category:perfumes',
-        });
-      }
       setBentoCards(cards);
     });
   }, [disabledPages]);

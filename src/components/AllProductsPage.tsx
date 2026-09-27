@@ -21,12 +21,9 @@ export default function AllProductsPage({ initialCategory = "all", onBack, onPro
   const filteredProducts =
     activeFilter === "all"
       ? products
-      : activeFilter === "category:perfumes"
-      ? products.filter((product) => product.category.startsWith("perfume"))
       : products.filter((product) => product.category === (activeFilter.startsWith("category:") ? activeFilter.slice("category:".length) : activeFilter));
   const filterCategories = [
     { label: "All", value: "all" },
-    ...(products.some((product) => product.category.startsWith("perfume")) ? [{ label: "Perfumes", value: "category:perfumes" }] : []),
     ...[...new Set(products.map((product) => product.category))].map((category) => ({
       label: category === "tops" ? "Shirts" : category === "bottoms" ? "Pants" : category.replace(/[_-]/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase()),
       value: `category:${category}`,
@@ -35,14 +32,6 @@ export default function AllProductsPage({ initialCategory = "all", onBack, onPro
   const categoryFilter = activeFilter.startsWith("category:") ? activeFilter.slice("category:".length) : activeFilter;
   const collectionTitle = activeFilter === "all"
     ? "All Products"
-    : categoryFilter === "perfumes"
-    ? "Perfume Collection"
-    : categoryFilter === "perfume-men"
-    ? "Men's Perfume Collection"
-    : categoryFilter === "perfume-women"
-    ? "Women's Perfume Collection"
-    : categoryFilter === "perfume-unisex"
-    ? "Unisex Perfume Collection"
     : categoryFilter === "tops"
     ? "Shirts"
     : categoryFilter === "bottoms"

@@ -104,7 +104,7 @@ export default function App() {
       || (page === 'pants' && !isStorefrontCategoryVisible('bottoms', storefrontVisibility))
       || storefrontVisibility.disabledPages.includes(page)
       || (page === 'new-releases' && storefrontVisibility.disabledSections.includes('new-releases'))
-      || (page === 'all-products' && requestedCategory && requestedCategory !== 'perfumes' && !isStorefrontCategoryVisible(requestedCategory, storefrontVisibility));
+      || (page === 'all-products' && requestedCategory && !isStorefrontCategoryVisible(requestedCategory, storefrontVisibility));
     const targetPage = pageDisabled ? 'home' : page;
     const nextUrl = targetPage === "home"
       ? window.location.pathname + window.location.search

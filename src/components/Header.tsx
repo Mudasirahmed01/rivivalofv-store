@@ -20,7 +20,7 @@ interface HeaderProps {
 export default function Header({ onAccountClick, onWishlistClick, onNavigate, disabledCategories = [], disabledSections = [], disabledPages = [] }: HeaderProps) {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [perfumeMenuOpen, setPerfumeMenuOpen] = useState(false);
+  const [categoryMenuOpen, setCategoryMenuOpen] = useState(false);
   const [catalogCategories, setCatalogCategories] = useState<Array<{ key: string; label: string; active: boolean }>>([]);
   const [searchOpen, setSearchOpen] = useState(false);
   const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
@@ -58,15 +58,12 @@ export default function Header({ onAccountClick, onWishlistClick, onNavigate, di
     { label: "HOME", page: "home" },
     ...(!disabledSections.includes('new-releases') && !disabledPages.includes('new-releases') ? [{ label: "NEW RELEASES", page: "new-releases" }] : []),
     ...(!disabledSections.includes('best-sellers') && !disabledPages.includes('best-sellers') ? [{ label: "BEST SELLERS", page: "best-sellers" }] : []),
-    ...(!disabledPages.includes('all-products') ? catalogCategories
-      .filter((category) => !category.key.startsWith('perfume') && !disabledCategories.includes(category.key))
-      .map((category) => ({ label: category.label.toUpperCase(), page: `category:${category.key}` })) : []),
   ].filter((link) => !disabledPages.includes(link.page));
-  const perfumeCategories = catalogCategories.filter((category) => category.key.startsWith('perfume') && !disabledCategories.includes(category.key));
-  const perfumeLinks = [
-    ...perfumeCategories.map((category) => ({ label: `${category.label.toUpperCase()} COLLECTION`, page: `category:${category.key}` })),
-    ...(perfumeCategories.length > 0 ? [{ label: "ALL PERFUMES", page: "category:perfumes" }] : []),
-  ].filter(() => !disabledPages.includes('all-products'));
+  const categoryLinks = !disabledPages.includes('all-products')
+    ? catalogCategories
+      .filter((category) => !disabledCategories.includes(category.key))
+      .map((category) => ({ label: category.label.toUpperCase(), page: `category:${category.key}` }))
+    : [];
 
   const handleNavClick = (page: string) => {
     setMenuOpen(false);
@@ -225,25 +222,25 @@ export default function Header({ onAccountClick, onWishlistClick, onNavigate, di
                       {link.label}
                     </motion.a>
                   ))}
-                  {perfumeLinks.length > 0 && <div>
+                  {categoryLinks.length > 0 && <div>
                     <button
                       type="button"
-                      onClick={() => setPerfumeMenuOpen((open) => !open)}
-                      aria-expanded={perfumeMenuOpen}
+                      onClick={() => setCategoryMenuOpen((open) => !open)}
+                      aria-expanded={categoryMenuOpen}
                       className="flex items-center gap-3 text-2xl font-bold text-[#111] transition-colors hover:text-[#6E6E73] md:text-5xl"
                     >
-                      PERFUMES
-                      <ChevronDown className={`h-6 w-6 transition-transform md:h-8 md:w-8 ${perfumeMenuOpen ? 'rotate-180' : ''}`} />
+                      CATEGORIES
+                      <ChevronDown className={`h-6 w-6 transition-transform md:h-8 md:w-8 ${categoryMenuOpen ? 'rotate-180' : ''}`} />
                     </button>
                     <AnimatePresence initial={false}>
-                      {perfumeMenuOpen && (
+                      {categoryMenuOpen && (
                         <motion.div
                           initial={{ height: 0, opacity: 0 }}
                           animate={{ height: 'auto', opacity: 1 }}
                           exit={{ height: 0, opacity: 0 }}
                           className="flex flex-col gap-3 overflow-hidden pl-4 pt-3 md:pl-8"
                         >
-                          {perfumeLinks.map((link) => (
+                          {categoryLinks.map((link) => (
                             <button
                               key={link.page}
                               type="button"

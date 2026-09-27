@@ -1,5 +1,5 @@
 -- Enable admin-managed product categories and homepage placements.
--- Run in Supabase SQL Editor before using the Catalog Options admin tab.
+-- Safe to rerun: preserves admin-created options and only adds missing defaults.
 
 do $$
 declare
@@ -38,5 +38,41 @@ values (
   }'::jsonb
 )
 on conflict (key) do nothing;
+
+update public.store_settings as settings
+set value = jsonb_set(
+  jsonb_set(
+    settings.value,
+    '{categories}',
+    coalesce(settings.value->'categories', '[]'::jsonb) || coalesce((
+      select jsonb_agg(seed.value)
+      from jsonb_array_elements('[
+        {"key":"tops","label":"Shirts","requiresSize":true,"active":true},
+        {"key":"bottoms","label":"Pants","requiresSize":true,"active":true}
+      ]'::jsonb) as seed(value)
+      where not exists (
+        select 1
+        from jsonb_array_elements(coalesce(settings.value->'categories', '[]'::jsonb)) as existing(value)
+        where existing.value->>'key' = seed.value->>'key'
+      )
+    ), '[]'::jsonb)
+  ),
+  '{placements}',
+  coalesce(settings.value->'placements', '[]'::jsonb) || coalesce((
+    select jsonb_agg(seed.value)
+    from jsonb_array_elements('[
+      {"key":"none","label":"No homepage placement","active":true},
+      {"key":"new_release","label":"Latest Drops","active":true},
+      {"key":"best_seller","label":"Best Sellers","active":true},
+      {"key":"hero","label":"Featured Products","active":true}
+    ]'::jsonb) as seed(value)
+    where not exists (
+      select 1
+      from jsonb_array_elements(coalesce(settings.value->'placements', '[]'::jsonb)) as existing(value)
+      where existing.value->>'key' = seed.value->>'key'
+    )
+  ), '[]'::jsonb)
+)
+where settings.key = 'catalog_options';
 
 notify pgrst, 'reload schema';
