@@ -23,21 +23,23 @@ export default function AccountPage({ onBack }: AccountPageProps) {
   const [addressFormOpen, setAddressFormOpen] = useState(false);
   const [addressForm, setAddressForm] = useState({ label: 'Home', first_name: '', last_name: '', address: '', city: '', state: '', zip_code: '', country: 'Pakistan', phone: '' });
   const [authLoading, setAuthLoading] = useState(true);
+  const [authCopy, setAuthCopy] = useState({ login_title: 'Welcome Back', login_tagline: 'Sign in to your account', signup_title: 'Create Account', signup_tagline: 'Join the Revival of V community' });
 
   useEffect(() => {
+    BackendService.getStoreSettings().then((settings) => setAuthCopy((current) => ({ ...current, ...(settings.auth_copy || {}) })));
     BackendService.getCurrentUser()
       .then(async (currentUser) => {
         setUser(currentUser);
         setIsLoggedIn(Boolean(currentUser));
         if (currentUser) {
-          const [userOrders, wishlist] = await Promise.all([
+          const [userOrders, wishlist, savedAddresses] = await Promise.all([
             BackendService.getUserOrders(currentUser.id),
             BackendService.getUserWishlist(currentUser.id),
             BackendService.getUserAddresses(currentUser.id),
           ]);
           setOrders(userOrders);
           setWishlistCount(wishlist.length);
-          setAddresses(addresses);
+          setAddresses(savedAddresses);
         }
       })
       .catch((error) => console.error("Failed to load account session:", error))
@@ -88,10 +90,10 @@ export default function AccountPage({ onBack }: AccountPageProps) {
                 <User size={28} className="text-white" />
               </div>
               <h1 className="text-2xl md:text-3xl font-bold text-[#111] mb-2">
-                {isSignUp ? "Create Account" : "Welcome Back"}
+                {isSignUp ? authCopy.signup_title : authCopy.login_title}
               </h1>
               <p className="text-sm text-[#6E6E73]">
-                {isSignUp ? "Join the Revival of V community" : "Sign in to your account"}
+                {isSignUp ? authCopy.signup_tagline : authCopy.login_tagline}
               </p>
             </div>
 
@@ -370,15 +372,7 @@ export default function AccountPage({ onBack }: AccountPageProps) {
                     <div className="absolute right-0.5 top-0.5 w-5 h-5 bg-white rounded-full" />
                   </div>
                 </div>
-                <div className="flex items-center justify-between py-3 border-b border-black/5">
-                  <div>
-                    <p className="text-sm font-semibold text-[#111]">Marketing Emails</p>
-                    <p className="text-xs text-[#6E6E73]">New drops, exclusive offers, and style tips</p>
-                  </div>
-                  <div className="w-10 h-6 bg-black/20 rounded-full relative cursor-pointer">
-                    <div className="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full" />
-                  </div>
-                </div>
+                <p className="border-b border-black/5 py-3 text-xs text-[#6E6E73]">Marketing emails are optional and are only enabled when you explicitly agree using the newsletter checkbox in the store footer.</p>
                 <div className="flex items-center justify-between py-3">
                   <div>
                     <p className="text-sm font-semibold text-[#111]">Two-Factor Auth</p>

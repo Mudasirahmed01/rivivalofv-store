@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Lock, User, Phone, ArrowLeft } from 'lucide-react';
 import BackendService from '../lib/backend';
@@ -19,6 +19,13 @@ export default function AuthPage({ onBack, onLoginSuccess }: AuthPageProps) {
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [loading, setLoading] = useState(false);
+  const [authCopy, setAuthCopy] = useState({ login_title: 'Welcome Back', login_tagline: 'Sign in to your account', signup_title: 'Create Account', signup_tagline: 'Join REVIVAL OF V' });
+
+  useEffect(() => {
+    BackendService.getStoreSettings().then((settings) => {
+      setAuthCopy((current) => ({ ...current, ...(settings.auth_copy || {}) }));
+    });
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,10 +75,10 @@ export default function AuthPage({ onBack, onLoginSuccess }: AuthPageProps) {
         >
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-[#111] mb-2">
-              {isLogin ? 'Welcome Back' : 'Create Account'}
+              {isLogin ? authCopy.login_title : authCopy.signup_title}
             </h1>
             <p className="text-sm text-gray-600">
-              {isLogin ? 'Sign in to your account' : 'Join REVIVAL OF V'}
+              {isLogin ? authCopy.login_tagline : authCopy.signup_tagline}
             </p>
           </div>
 

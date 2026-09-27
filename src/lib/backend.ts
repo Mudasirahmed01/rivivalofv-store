@@ -451,6 +451,22 @@ class BackendService {
     return true;
   }
 
+  static async subscribeToNewsletter(email: string, consentText: string): Promise<{ success: boolean; message: string }> {
+    const normalizedEmail = email.trim().toLowerCase();
+    const { error } = await supabase.from('newsletter_subscribers').insert({
+      email: normalizedEmail,
+      consent: true,
+      consent_text: consentText,
+      source: 'footer',
+    });
+    if (error?.code === '23505') return { success: true, message: 'This email is already subscribed.' };
+    if (error) {
+      console.error('Newsletter signup failed:', error);
+      return { success: false, message: error.message };
+    }
+    return { success: true, message: 'You are subscribed to email updates.' };
+  }
+
   static async getUserAddresses(userId?: string): Promise<any[]> {
     const currentUser = userId || (await this.getCurrentUser())?.id;
     if (!currentUser) return [];

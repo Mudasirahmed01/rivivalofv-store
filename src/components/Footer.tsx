@@ -1,4 +1,6 @@
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import BackendService from "../lib/backend";
 
 
 interface FooterProps {
@@ -8,23 +10,14 @@ interface FooterProps {
   disabledSections?: string[];
 }
 
-const footerLinks = {
-  shop: [
-    { label: "New Releases", href: "#", page: "new-releases" },
-    { label: "Best Sellers", href: "#", page: "best-sellers" },
-    { label: "Shirts", href: "#", page: "shirts" },
-    { label: "Pants", href: "#", page: "pants" },
-  ],
-  support: [
-    { label: "Shipping & Returns", href: "#", page: "shipping" as const },
-    { label: "Size Guide", href: "#" },
-    { label: "Contact Us", href: "#", page: "contact" as const },
-  ],
-  legal: [
-    { label: "Privacy Policy", href: "#", page: "privacy" as const },
-    { label: "Terms of Service", href: "#", page: "terms" as const },
-    { label: "Cookie Policy", href: "#" },
-  ],
+type FooterLinkItem = { label: string; destination: string; active: boolean };
+type FooterLinkGroups = Record<string, FooterLinkItem[]>;
+
+const defaultFooterLinks: FooterLinkGroups = {
+  brand: [{ label: 'Our Story', destination: 'home', active: true }],
+  shop: [{ label: 'All Products', destination: 'all-products', active: true }, { label: 'New Releases', destination: 'new-releases', active: true }, { label: 'Best Sellers', destination: 'best-sellers', active: true }, { label: 'Shirts', destination: 'shirts', active: true }, { label: 'Pants', destination: 'pants', active: true }],
+  support: [{ label: 'Shipping & Returns', destination: 'shipping', active: true }, { label: 'Size Guide', destination: 'all-products', active: true }, { label: 'Contact Us', destination: 'contact', active: true }],
+  legal: [{ label: 'Privacy Policy', destination: 'privacy', active: true }, { label: 'Terms of Service', destination: 'terms', active: true }, { label: 'Cookie Policy', destination: 'privacy', active: true }],
 };
 
 function FooterLink({ label, href, onClick }: { label: string; href: string; onClick?: (e: React.MouseEvent) => void }) {
@@ -42,18 +35,46 @@ function FooterLink({ label, href, onClick }: { label: string; href: string; onC
 }
 
 export default function Footer({ onNavigate, disabledPages = [], disabledCategories = [], disabledSections = [] }: FooterProps) {
+  const [linkGroups, setLinkGroups] = useState<FooterLinkGroups>({});
+  const [newsletterCopy, setNewsletterCopy] = useState('Get product news and special offers by email.');
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [newsletterConsent, setNewsletterConsent] = useState(false);
+  const [newsletterMessage, setNewsletterMessage] = useState('');
+  const [newsletterSubmitting, setNewsletterSubmitting] = useState(false);
+
+  useEffect(() => {
+    BackendService.getStoreSettings().then((settings) => {
+      setLinkGroups(settings.footer_links || {});
+      setNewsletterCopy(settings.footer_newsletter?.text || 'Get product news and special offers by email.');
+    });
+  }, []);
+
   const handleLinkClick = (e: React.MouseEvent, page: string) => {
     e.preventDefault();
     onNavigate?.(page);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
-  const visibleShopLinks = footerLinks.shop.filter((link) => !disabledPages.includes(link.page)
-    && !(link.page === 'new-releases' && disabledSections.includes('new-releases'))
-    && !(link.page === 'best-sellers' && disabledSections.includes('best-sellers'))
-    && !(link.page === 'shirts' && disabledCategories.includes('tops'))
-    && !(link.page === 'pants' && disabledCategories.includes('bottoms')));
-  const visibleSupportLinks = footerLinks.support.filter((link) => !('page' in link) || !link.page || !disabledPages.includes(link.page));
-  const visibleLegalLinks = footerLinks.legal.filter((link) => !('page' in link) || !link.page || !disabledPages.includes(link.page));
+  const isLinkVisible = (link: FooterLinkItem) => link.active
+    && !disabledPages.includes(link.destination)
+    && !(link.destination.startsWith('category:') && (disabledPages.includes('all-products') || disabledCategories.includes(link.destination.slice('category:'.length))))
+    && !(link.destination === 'new-releases' && disabledSections.includes('new-releases'))
+    && !(link.destination === 'best-sellers' && disabledSections.includes('best-sellers'))
+    && !(link.destination === 'shirts' && disabledCategories.includes('tops'))
+    && !(link.destination === 'pants' && disabledCategories.includes('bottoms'));
+  const groups: FooterLinkGroups = Object.keys(linkGroups).length ? linkGroups : defaultFooterLinks;
+
+  const submitNewsletter = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!newsletterConsent || newsletterSubmitting) return;
+    setNewsletterSubmitting(true);
+    const result = await BackendService.subscribeToNewsletter(newsletterEmail, 'I agree to receive marketing emails and offers.');
+    setNewsletterMessage(result.message);
+    setNewsletterSubmitting(false);
+    if (result.success) {
+      setNewsletterEmail('');
+      setNewsletterConsent(false);
+    }
+  };
 
   return (
     <footer className="bg-[#0A0A0A] text-white py-12 md:py-16 px-4 md:px-6">
@@ -71,17 +92,27 @@ export default function Footer({ onNavigate, disabledPages = [], disabledCategor
 
           {/* Newsletter */}
           <div className="w-full lg:w-auto">
-            <p className="text-[10px] md:text-xs text-white/30 uppercase tracking-wider mb-2 md:mb-3">Join the movement</p>
-            <div className="flex w-full lg:w-80">
+            <p className="text-[10px] md:text-xs text-white/60 mb-2 md:mb-3">{newsletterCopy}</p>
+            <form onSubmit={submitNewsletter} className="w-full lg:w-96">
+            <div className="flex w-full">
               <input
                 type="email"
+                required
+                value={newsletterEmail}
+                onChange={(event) => setNewsletterEmail(event.target.value)}
                 placeholder="Your email"
                 className="flex-1 px-3 md:px-4 py-2.5 md:py-3 bg-white/5 border border-white/10 rounded-l-xl text-xs md:text-sm text-white placeholder:text-white/30 outline-none focus:border-white/30 transition-colors"
               />
-              <button className="px-4 md:px-5 py-2.5 md:py-3 bg-white text-black text-[10px] md:text-xs font-bold tracking-wider rounded-r-xl hover:bg-white/90 transition-colors">
+              <button disabled={!newsletterConsent || newsletterSubmitting} className="px-4 md:px-5 py-2.5 md:py-3 bg-white text-black text-[10px] md:text-xs font-bold tracking-wider rounded-r-xl hover:bg-white/90 transition-colors disabled:cursor-not-allowed disabled:opacity-50">
                 JOIN
               </button>
             </div>
+            <label className="mt-2 flex items-start gap-2 text-[10px] leading-relaxed text-white/60">
+              <input type="checkbox" checked={newsletterConsent} onChange={(event) => setNewsletterConsent(event.target.checked)} className="mt-0.5 accent-white" />
+              I agree to receive news and promotional offers by email. I can unsubscribe at any time.
+            </label>
+            {newsletterMessage && <p role="status" className="mt-2 text-xs text-white/80">{newsletterMessage}</p>}
+            </form>
           </div>
         </div>
 
@@ -93,7 +124,7 @@ export default function Footer({ onNavigate, disabledPages = [], disabledCategor
               Brand
             </h4>
             <div className="space-y-0">
-              <FooterLink label="Our Story" href="#" />
+              {(groups.brand || []).filter(isLinkVisible).map((link) => <FooterLink key={link.label} label={link.label} href="#" onClick={(event) => handleLinkClick(event, link.destination)} />)}
             </div>
             {/* Status */}
             <div className="flex items-center gap-2 mt-4 md:mt-6">
@@ -104,12 +135,12 @@ export default function Footer({ onNavigate, disabledPages = [], disabledCategor
 
           {/* Shop Column */}
           <div>
-            <h4 className="text-[10px] md:text-xs font-bold text-white/30 uppercase tracking-[0.2em] mb-4 md:mb-5">
+              <h4 className="text-[10px] md:text-xs font-bold text-white/30 uppercase tracking-[0.2em] mb-4 md:mb-5">
               Shop
             </h4>
             <div className="space-y-0">
-              {visibleShopLinks.map((link) => (
-                <FooterLink key={link.label} label={link.label} href={link.href} onClick={(event) => handleLinkClick(event, link.page)} />
+              {(groups.shop || []).filter(isLinkVisible).map((link) => (
+                <FooterLink key={`${link.label}-${link.destination}`} label={link.label} href="#" onClick={(event) => handleLinkClick(event, link.destination)} />
               ))}
             </div>
           </div>
@@ -120,12 +151,12 @@ export default function Footer({ onNavigate, disabledPages = [], disabledCategor
               Support
             </h4>
             <div className="space-y-0">
-              {visibleSupportLinks.map((link) => (
+              {(groups.support || []).filter(isLinkVisible).map((link) => (
                 <FooterLink
                   key={link.label}
                   label={link.label}
-                  href={link.href}
-                  onClick={'page' in link && link.page ? (e) => handleLinkClick(e, link.page!) : undefined}
+                  href="#"
+                  onClick={(event) => handleLinkClick(event, link.destination)}
                 />
               ))}
             </div>
@@ -137,12 +168,12 @@ export default function Footer({ onNavigate, disabledPages = [], disabledCategor
               Legal
             </h4>
             <div className="space-y-0 mb-4 md:mb-6">
-              {visibleLegalLinks.map((link) => (
+              {(groups.legal || []).filter(isLinkVisible).map((link) => (
                 <FooterLink
                   key={link.label}
                   label={link.label}
-                  href={link.href}
-                  onClick={'page' in link && link.page ? (e) => handleLinkClick(e, link.page!) : undefined}
+                  href="#"
+                  onClick={(event) => handleLinkClick(event, link.destination)}
                 />
               ))}
             </div>
