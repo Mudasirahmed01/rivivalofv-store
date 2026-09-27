@@ -2,7 +2,11 @@ import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import BackendService from "../lib/backend";
 
-export default function Hero() {
+interface HeroProps {
+  onExploreCollection: () => void;
+}
+
+export default function Hero({ onExploreCollection }: HeroProps) {
   const [heroSlides, setHeroSlides] = useState<any[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -105,6 +109,7 @@ export default function Hero() {
             <motion.button
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
+              onClick={onExploreCollection}
               className="px-6 md:px-8 py-3 md:py-4 bg-black text-white rounded-full font-semibold text-xs md:text-sm tracking-wider hover:shadow-[0_15px_35px_rgba(0,0,0,0.3)] transition-shadow duration-300"
             >
               {slide.cta}

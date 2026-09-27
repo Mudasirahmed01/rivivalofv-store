@@ -50,6 +50,15 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
     setShowSizes(false);
   };
 
+  const handleQuickAdd = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    if (product.variants.length === 0) {
+      handleAddToCart("");
+      return;
+    }
+    setShowSizes((visible) => !visible);
+  };
+
   const primaryImage = product.images.find((img) => img.isPrimary) || product.images[0];
   const secondaryImage = product.images.find((img) => !img.isPrimary) || product.images[1];
 
@@ -88,7 +97,8 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
 
         {/* Quick Add - Floating Bottom Button */}
         <motion.div
-          className="absolute bottom-0 left-0 right-0 p-3 md:p-4"
+          className="absolute bottom-0 left-0 right-0 hidden p-3 md:block md:p-4"
+          style={{ pointerEvents: isHovered || showSizes ? "auto" : "none" }}
           animate={{ 
             y: isHovered ? 0 : 60,
             opacity: isHovered ? 1 : 0
@@ -96,13 +106,21 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
         >
           <button
-            onClick={(e) => { e.stopPropagation(); setShowSizes(!showSizes); }}
+            onClick={handleQuickAdd}
             className="w-full py-3 bg-white text-black text-[10px] md:text-xs font-bold tracking-[0.15em] uppercase flex items-center justify-center gap-2 hover:bg-black hover:text-white transition-colors duration-300"
           >
             <Plus size={12} />
-            Quick Add
+            {product.variants.length === 0 ? "Add to Bag" : showSizes ? "Choose Size" : "Quick Add"}
           </button>
         </motion.div>
+
+        <button
+          onClick={handleQuickAdd}
+          className="absolute bottom-2 left-2 right-2 flex items-center justify-center gap-2 bg-white px-3 py-3 text-[10px] font-bold uppercase text-black md:hidden"
+        >
+          <Plus size={12} />
+          {product.variants.length === 0 ? "Add to Bag" : showSizes ? "Choose Size" : "Quick Add"}
+        </button>
 
         {/* Sale Badge & Tags */}
         <div className="absolute top-3 left-3 md:top-4 md:left-4 flex flex-col gap-1">
@@ -157,7 +175,7 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
       </div>
 
       {/* Size Picker Dropdown */}
-      <motion.div
+      {product.variants.length > 0 && <motion.div
         initial={false}
         animate={{ 
           height: showSizes ? "auto" : 0,
@@ -178,7 +196,7 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
             </button>
           ))}
         </div>
-      </motion.div>
+      </motion.div>}
 
       {/* Product Info - Minimal Typography */}
       <div className="pt-3 md:pt-4">

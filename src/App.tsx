@@ -132,11 +132,11 @@ export default function App() {
 
       {currentPage === "home" && (
         <main>
-          <Hero />
+          <Hero onExploreCollection={handleViewAllProducts} />
           <Marquee />
           <Features />
           <ScrollRevealText />
-          <ProductGrid onProductClick={handleProductClick} />
+          <ProductGrid onProductClick={handleProductClick} onViewAll={handleViewAllProducts} />
           <BentoGrid onNavigate={(page) => navigateToPage(page as StorePage)} />
           <BestSellers onProductClick={handleProductClick} />
           <FeaturedProducts onViewAll={handleViewAllProducts} onProductClick={handleProductClick} />

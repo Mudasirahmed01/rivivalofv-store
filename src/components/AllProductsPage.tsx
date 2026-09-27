@@ -11,12 +11,6 @@ interface AllProductsPageProps {
   onProductClick: (product: Product) => void;
 }
 
-const filterCategories = [
-  { label: "All", value: "all" },
-  { label: "Shirts", value: "tops" },
-  { label: "Pants", value: "bottoms" },
-];
-
 export default function AllProductsPage({ onBack, onProductClick }: AllProductsPageProps) {
   const [activeFilter, setActiveFilter] = useState("all");
   const { products, loading } = useProducts();
@@ -25,6 +19,13 @@ export default function AllProductsPage({ onBack, onProductClick }: AllProductsP
     activeFilter === "all"
       ? products
       : products.filter((p) => p.category === activeFilter);
+  const filterCategories = [
+    { label: "All", value: "all" },
+    ...[...new Set(products.map((product) => product.category))].map((category) => ({
+      label: category === "tops" ? "Shirts" : category === "bottoms" ? "Pants" : category.replace(/[_-]/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase()),
+      value: category,
+    })),
+  ];
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] pt-20 md:pt-28 pb-16 px-4 md:px-6">
@@ -45,7 +46,7 @@ export default function AllProductsPage({ onBack, onProductClick }: AllProductsP
             All Products
           </h1>
           <p className="text-sm md:text-base text-[#6E6E73] max-w-xl">
-            Explore our complete collection of premium shirts and pants.
+            Explore the complete collection across every product category.
           </p>
         </div>
 

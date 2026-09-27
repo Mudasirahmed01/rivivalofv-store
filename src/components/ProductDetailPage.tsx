@@ -78,7 +78,7 @@ export default function ProductDetailPage({ product, onBack, onProductClick }: P
         <Breadcrumbs
           items={[
             { label: "Home", href: "#" },
-            { label: product.category === "tops" ? "Shirts" : "Pants", href: "#" },
+            { label: product.category === "tops" ? "Shirts" : product.category === "bottoms" ? "Pants" : product.category.replace(/[_-]/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase()), href: "#" },
             { label: product.title },
           ]}
         />

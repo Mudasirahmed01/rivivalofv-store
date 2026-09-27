@@ -13,11 +13,13 @@ const categories = [
 
 interface ProductGridProps {
   onProductClick: (product: Product) => void;
+  onViewAll: () => void;
 }
 
-export default function ProductGrid({ onProductClick }: ProductGridProps) {
+export default function ProductGrid({ onProductClick, onViewAll }: ProductGridProps) {
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const { products, loading } = useProductBySlot("new_release");
+  const categories = [...new Set(products.map((product) => product.category))];
 
   const filteredProducts = activeCategory === "all"
     ? products
@@ -38,12 +40,12 @@ export default function ProductGrid({ onProductClick }: ProductGridProps) {
               Latest Drops
             </h2>
           </div>
-          <a
-            href="#"
-            className="hidden sm:flex items-center gap-2 text-xs md:text-sm font-semibold text-[#111] hover:gap-3 transition-all duration-200"
+          <button
+            onClick={onViewAll}
+            className="flex items-center gap-2 text-xs md:text-sm font-semibold text-[#111] hover:gap-3 transition-all duration-200"
           >
             SEE ALL <ArrowRight size={14} />
-          </a>
+          </button>
         </div>
 
         {/* Category Filter */}
@@ -58,17 +60,17 @@ export default function ProductGrid({ onProductClick }: ProductGridProps) {
           >
             All
           </button>
-          {categories.map((cat) => (
+          {categories.map((category) => (
             <button
-              key={cat.slug}
-              onClick={() => setActiveCategory(cat.slug)}
+              key={category}
+              onClick={() => setActiveCategory(category)}
               className={`px-4 md:px-5 py-2 md:py-2.5 rounded-full text-xs md:text-sm font-medium transition-all duration-300 ${
-                activeCategory === cat.slug
+                activeCategory === category
                   ? "bg-black text-white"
                   : "bg-white text-[#6E6E73] border border-black/10 hover:border-black/30"
               }`}
             >
-              {cat.name}
+              {category === "tops" ? "Shirts" : category === "bottoms" ? "Pants" : category.replace(/[_-]/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase())}
             </button>
           ))}
         </div>
