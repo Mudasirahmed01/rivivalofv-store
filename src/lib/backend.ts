@@ -587,7 +587,10 @@ class BackendService {
       shipping: freeShippingThreshold > 0 && subtotal >= freeShippingThreshold ? 0 : deliveryCharge,
       tax: Math.round((subtotal - (orderData.discount || 0)) * (taxRate / 100) * 100) / 100,
       total: orderData.total,
-      shipping_address: orderData.shippingAddress,
+      shipping_address: {
+        ...orderData.shippingAddress,
+        email: orderData.email.trim().toLowerCase(),
+      },
       payment_method: orderData.paymentMethod,
       coupon_code: orderData.couponCode,
       status: 'pending',
