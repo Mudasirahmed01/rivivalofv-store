@@ -578,6 +578,7 @@ class BackendService {
     const taxRate = Number(checkoutSettings.tax_rate || 0);
 
     const newOrder = {
+      id: crypto.randomUUID(),
       user_id: user?.id || null,
       items: orderData.items,
       subtotal: subtotal,
@@ -593,9 +594,7 @@ class BackendService {
 
     const { data, error } = await supabase
       .from('orders')
-      .insert([newOrder])
-      .select()
-      .single();
+      .insert([newOrder]);
 
     if (error) {
       console.error('❌ Error creating order:', error);
@@ -604,10 +603,10 @@ class BackendService {
 
     console.log('✅ Order created successfully');
     const { error: notificationError } = await supabase.functions.invoke('order-confirmation', {
-      body: { email: orderData.email, order: data },
+      body: { email: orderData.email, order: newOrder },
     });
     if (notificationError) console.warn('Order saved, but confirmation email was not sent:', notificationError.message);
-    return { success: true, message: 'Order placed successfully', order: data };
+    return { success: true, message: 'Order placed successfully', order: newOrder };
   }
 
   /**
