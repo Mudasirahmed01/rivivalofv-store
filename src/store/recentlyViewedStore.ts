@@ -4,6 +4,7 @@ import { Product } from "../types";
 interface RecentlyViewedStore {
   items: Product[];
   addProduct: (product: Product) => void;
+  syncProducts: (products: Product[]) => void;
   clearHistory: () => void;
 }
 
@@ -35,6 +36,16 @@ export const useRecentlyViewedStore = create<RecentlyViewedStore>((set, get) => 
       const filtered = state.items.filter((item) => item.id !== product.id);
       // Add to beginning, keep max 10 items
       const newItems = [product, ...filtered].slice(0, 10);
+      saveRecentlyViewedToStorage(newItems);
+      return { items: newItems };
+    });
+  },
+
+  syncProducts: (products: Product[]) => {
+    const validIds = new Set(products.map((product) => product.id));
+    set((state) => {
+      if (state.items.every((item) => validIds.has(item.id))) return state;
+      const newItems = state.items.filter((item) => validIds.has(item.id));
       saveRecentlyViewedToStorage(newItems);
       return { items: newItems };
     });
