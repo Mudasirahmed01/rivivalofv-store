@@ -5,7 +5,6 @@ import { Product } from "../types";
 import { useCartStore } from "../store/cartStore";
 import { useRecentlyViewedStore } from "../store/recentlyViewedStore";
 import { useToastStore } from "../store/toastStore";
-import { products } from "../data/products";
 import ProductCard from "./ProductCard";
 import SizeGuide from "./SizeGuide";
 import ShareModal from "./ShareModal";
@@ -13,6 +12,7 @@ import ProductReviews from "./ProductReviews";
 import ImageZoom from "./ImageZoom";
 import Breadcrumbs from "./Breadcrumbs";
 import { formatPKR } from "../lib/currency";
+import { useRelatedProducts } from "../hooks/useProducts";
 
 interface ProductDetailPageProps {
   product: Product;
@@ -59,9 +59,7 @@ export default function ProductDetailPage({ product, onBack, onProductClick }: P
   };
 
   // Get related products (same category, exclude current)
-  const relatedProducts = products
-    .filter((p) => p.category === product.category && p.id !== product.id)
-    .slice(0, 4);
+  const { products: relatedProducts } = useRelatedProducts(product.id, product.category);
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] pt-20 md:pt-28 pb-16">

@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
-import { products } from "../data/products";
 import ProductCard from "./ProductCard";
 import { Product } from "../types";
+import { useProducts } from "../hooks/useProducts";
+import { ProductCardSkeleton } from "./SkeletonLoader";
 
 interface AllProductsPageProps {
   onBack: () => void;
@@ -18,6 +19,7 @@ const filterCategories = [
 
 export default function AllProductsPage({ onBack, onProductClick }: AllProductsPageProps) {
   const [activeFilter, setActiveFilter] = useState("all");
+  const { products, loading } = useProducts();
 
   const filteredProducts =
     activeFilter === "all"
@@ -27,7 +29,6 @@ export default function AllProductsPage({ onBack, onProductClick }: AllProductsP
   return (
     <div className="min-h-screen bg-[#FAFAFA] pt-20 md:pt-28 pb-16 px-4 md:px-6">
       <div className="max-w-[1440px] mx-auto">
-        {/* Back Button */}
         <button
           onClick={onBack}
           className="flex items-center gap-2 text-xs md:text-sm text-[#6E6E73] hover:text-[#111] transition-colors mb-6 md:mb-8"
@@ -36,7 +37,6 @@ export default function AllProductsPage({ onBack, onProductClick }: AllProductsP
           Back to Home
         </button>
 
-        {/* Page Header */}
         <div className="mb-8 md:mb-12">
           <p className="text-xs md:text-sm font-bold text-[#6E6E73] tracking-wider mb-2">
             FULL CATALOG
@@ -49,7 +49,6 @@ export default function AllProductsPage({ onBack, onProductClick }: AllProductsP
           </p>
         </div>
 
-        {/* Category Filter Pills */}
         <div className="flex flex-wrap gap-2 mb-8 md:mb-12">
           {filterCategories.map((cat) => (
             <motion.button
@@ -67,32 +66,40 @@ export default function AllProductsPage({ onBack, onProductClick }: AllProductsP
           ))}
         </div>
 
-        {/* Product Grid */}
-        <motion.div layout className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
-          <AnimatePresence mode="popLayout">
-            {filteredProducts.map((product, i) => (
-              <motion.div
-                key={product.id}
-                layout
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.4, delay: i * 0.05 }}
-                className="cursor-pointer"
-                onClick={() => onProductClick(product)}
-              >
-                <ProductCard product={product} index={i} />
-              </motion.div>
+        {loading ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
+            {[...Array(12)].map((_, i) => (
+              <ProductCardSkeleton key={i} />
             ))}
-          </AnimatePresence>
-        </motion.div>
+          </div>
+        ) : (
+          <motion.div layout className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
+            <AnimatePresence mode="popLayout">
+              {filteredProducts.map((product, i) => (
+                <motion.div
+                  key={product.id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.4, delay: i * 0.05 }}
+                  className="cursor-pointer"
+                  onClick={() => onProductClick(product)}
+                >
+                  <ProductCard product={product} index={i} />
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </motion.div>
+        )}
 
-        {/* Results Count */}
-        <div className="text-center mt-10 md:mt-12">
-          <p className="text-xs md:text-sm text-[#6E6E73]">
-            Showing {filteredProducts.length} {filteredProducts.length === 1 ? "product" : "products"}
-          </p>
-        </div>
+        {!loading && (
+          <div className="text-center mt-10 md:mt-12">
+            <p className="text-xs md:text-sm text-[#6E6E73]">
+              Showing {filteredProducts.length} {filteredProducts.length === 1 ? "product" : "products"}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

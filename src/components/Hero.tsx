@@ -1,10 +1,32 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { heroSlides } from "../data/products";
+import BackendService from "../lib/backend";
 
 export default function Hero() {
+  const [heroSlides, setHeroSlides] = useState<any[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    BackendService.getHomepageBanners().then((banners) => {
+      const liveSlides = banners
+        .filter((banner) => banner.image_url && banner.headline)
+        .map((banner) => ({
+          id: banner.id,
+          preTitle: banner.pre_title || '',
+          headline: banner.headline,
+          subheadline: banner.subheadline || '',
+          cta: banner.cta || 'SHOP NOW',
+          image: banner.image_url,
+        }));
+
+      if (liveSlides.length > 0) {
+        setHeroSlides(liveSlides);
+        setCurrentSlide(0);
+        setProgress(0);
+      }
+    });
+  }, []);
 
   const nextSlide = useCallback(() => {
     setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
@@ -24,7 +46,11 @@ export default function Hero() {
     return () => clearInterval(interval);
   }, [nextSlide]);
 
-  const slide = heroSlides[currentSlide];
+  if (heroSlides.length === 0) {
+    return <section className="flex h-[85vh] items-center justify-center bg-[#FAFAFA] text-sm text-[#6E6E73]">No active banners configured.</section>;
+  }
+
+  const slide = heroSlides[currentSlide] || heroSlides[0];
 
   return (
     <section className="relative w-full h-[85vh] md:h-screen overflow-hidden bg-[#FAFAFA]">
@@ -43,7 +69,7 @@ export default function Hero() {
             alt={slide.headline}
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60" />
+          <div className="absolute inset-0 bg-linear-to-b from-black/40 via-black/20 to-black/60" />
         </motion.div>
       </AnimatePresence>
 

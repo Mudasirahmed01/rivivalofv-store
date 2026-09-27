@@ -4,7 +4,7 @@ import BackendService from "../lib/backend";
 export interface Coupon {
   id?: string;
   code: string;
-  discount: number; // percentage or fixed amount
+  discount: number;
   type: "percentage" | "fixed";
   minPurchase?: number;
   maxDiscount?: number;
@@ -15,25 +15,30 @@ export interface Coupon {
 interface CouponStore {
   availableCoupons: Coupon[];
   appliedCoupon: Coupon | null;
+  loading: boolean;
+  fetchCoupons: () => Promise<void>;
   applyCoupon: (code: string) => { success: boolean; message: string };
   removeCoupon: () => void;
   calculateDiscount: (subtotal: number) => number;
-  fetchCoupons: () => Promise<void>;
+  addCoupon: (coupon: Coupon) => Promise<boolean>;
+  updateCoupon: (id: string, updates: Partial<Coupon>) => Promise<boolean>;
+  deleteCoupon: (id: string) => Promise<boolean>;
 }
 
 export const useCouponStore = create<CouponStore>((set, get) => ({
   availableCoupons: [],
   appliedCoupon: null,
+  loading: false,
 
   fetchCoupons: async () => {
-    const coupons = await BackendService.getAllCoupons();
-    set({ availableCoupons: coupons.map((coupon: any) => ({
-      ...coupon,
-      minPurchase: coupon.minPurchase ?? coupon.min_purchase,
-      maxDiscount: coupon.maxDiscount ?? coupon.max_discount,
-      expiresAt: coupon.expiresAt ?? coupon.expires_at,
-      isActive: coupon.isActive ?? coupon.is_active,
-    })) });
+    set({ loading: true });
+    try {
+      const coupons = await BackendService.getAllCoupons();
+      set({ availableCoupons: coupons, loading: false });
+    } catch (error) {
+      console.error("Error fetching coupons:", error);
+      set({ loading: false });
+    }
   },
 
   applyCoupon: (code: string) => {
@@ -76,5 +81,32 @@ export const useCouponStore = create<CouponStore>((set, get) => ({
     }
 
     return Math.min(discount, subtotal);
+  },
+
+  addCoupon: async (coupon: Coupon) => {
+    try {
+      return await BackendService.addCoupon(coupon);
+    } catch (error) {
+      console.error("Error adding coupon:", error);
+      return false;
+    }
+  },
+
+  updateCoupon: async (id: string, updates: Partial<Coupon>) => {
+    try {
+      return await BackendService.updateCoupon(id, updates);
+    } catch (error) {
+      console.error("Error updating coupon:", error);
+      return false;
+    }
+  },
+
+  deleteCoupon: async (id: string) => {
+    try {
+      return await BackendService.deleteCoupon(id);
+    } catch (error) {
+      console.error("Error deleting coupon:", error);
+      return false;
+    }
   },
 }));

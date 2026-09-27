@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight } from "lucide-react";
-import { products } from "../data/products";
 import ProductCard from "./ProductCard";
 import { Product } from "../types";
+import { useProducts } from "../hooks/useProducts";
 
 const filterCategories = [
   { label: "All", value: "all" },
@@ -18,6 +18,7 @@ interface FeaturedProductsProps {
 
 export default function FeaturedProducts({ onViewAll, onProductClick }: FeaturedProductsProps) {
   const [activeFilter, setActiveFilter] = useState("all");
+  const { products } = useProducts();
 
   const filteredProducts =
     activeFilter === "all"

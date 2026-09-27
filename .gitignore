@@ -3,3 +3,9 @@ node_modules/
 dist/
 build/
 *.log
+.env
+.env.*
+!.env.example
+admin-dashboard/
+admin-mobile/
+/app.json

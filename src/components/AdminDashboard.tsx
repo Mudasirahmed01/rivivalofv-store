@@ -7,33 +7,61 @@ import {
 import BackendService from '../lib/backend';
 import { Product, Order } from '../types';
 import { formatPKR } from '../lib/currency';
+import AdminProductForm from './AdminProductForm';
+import AdminContentManager from './AdminContentManager';
 
 interface AdminDashboardProps {
   onBack: () => void;
 }
 
 export default function AdminDashboard({ onBack }: AdminDashboardProps) {
-  const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'orders' | 'customers'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'orders' | 'customers' | 'content'>('overview');
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
+  const [authorized, setAuthorized] = useState<boolean | null>(null);
   const [stats, setStats] = useState({
     totalProducts: 0,
     totalOrders: 0,
     totalRevenue: 0,
     totalCustomers: 0,
   });
+  const [showProductForm, setShowProductForm] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | undefined>();
 
   useEffect(() => {
-    loadData();
+    BackendService.getCurrentUser().then((user) => {
+      const role = user?.app_metadata?.role || user?.user_metadata?.role;
+      const isAdmin = role === 'admin';
+      setAuthorized(isAdmin);
+      if (isAdmin) loadData();
+    });
   }, []);
 
-  const loadData = () => {
-    const allProducts = BackendService.getProducts();
-    const allOrders = BackendService.getOrders();
-    const allUsers = BackendService.getUsers();
+  if (authorized === null) {
+    return <div className="min-h-screen bg-[#FAFAFA] pt-24 px-4 text-center">Checking admin access...</div>;
+  }
+
+  if (!authorized) {
+    return (
+      <div className="min-h-screen bg-[#FAFAFA] pt-24 px-4 text-center">
+        <h1 className="text-2xl font-bold text-[#111]">Admin access required</h1>
+        <p className="mt-2 text-sm text-gray-600">Your account is not authorized to view this page.</p>
+        <button onClick={onBack} className="mt-6 rounded-full bg-black px-6 py-3 text-sm font-semibold text-white">Back to Store</button>
+      </div>
+    );
+  }
+
+  const loadData = async () => {
+    const [allProducts, allOrders, allUsers] = await Promise.all([
+      BackendService.getProducts(),
+      BackendService.getAllOrders(),
+      BackendService.getUsers(),
+    ]);
 
     setProducts(allProducts);
     setOrders(allOrders);
+    setUsers(allUsers);
     setStats({
       totalProducts: allProducts.length,
       totalOrders: allOrders.length,
@@ -42,16 +70,16 @@ export default function AdminDashboard({ onBack }: AdminDashboardProps) {
     });
   };
 
-  const handleDeleteProduct = (id: string) => {
+  const handleDeleteProduct = async (id: string) => {
     if (confirm('Are you sure you want to delete this product?')) {
-      BackendService.deleteProduct(id);
-      loadData();
+      await BackendService.deleteProduct(id);
+      await loadData();
     }
   };
 
-  const handleUpdateOrderStatus = (orderId: string, status: string) => {
-    BackendService.updateOrderStatus(orderId, status);
-    loadData();
+  const handleUpdateOrderStatus = async (orderId: string, status: string) => {
+    await BackendService.updateOrderStatus(orderId, status);
+    await loadData();
   };
 
   return (
@@ -79,6 +107,7 @@ export default function AdminDashboard({ onBack }: AdminDashboardProps) {
             { id: 'products', label: 'Products', icon: Package },
             { id: 'orders', label: 'Orders', icon: ShoppingBag },
             { id: 'customers', label: 'Customers', icon: Users },
+            { id: 'content', label: 'Homepage Content', icon: Edit },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -175,11 +204,19 @@ export default function AdminDashboard({ onBack }: AdminDashboardProps) {
           >
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-[#111]">All Products</h2>
-              <button className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-full text-sm font-medium hover:bg-black/90 transition-colors">
+              <button onClick={() => { setEditingProduct(undefined); setShowProductForm(true); }} className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-full text-sm font-medium hover:bg-black/90 transition-colors">
                 <Plus size={16} />
                 Add Product
               </button>
             </div>
+
+            {showProductForm && (
+              <AdminProductForm
+                product={editingProduct}
+                onSaved={async () => { setShowProductForm(false); setEditingProduct(undefined); await loadData(); }}
+                onCancel={() => { setShowProductForm(false); setEditingProduct(undefined); }}
+              />
+            )}
 
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -219,7 +256,7 @@ export default function AdminDashboard({ onBack }: AdminDashboardProps) {
                       </td>
                       <td className="py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <button className="p-2 hover:bg-black/5 rounded-lg transition-colors">
+                          <button onClick={() => { setEditingProduct(product); setShowProductForm(true); }} className="p-2 hover:bg-black/5 rounded-lg transition-colors">
                             <Eye size={16} className="text-gray-600" />
                           </button>
                           <button className="p-2 hover:bg-black/5 rounded-lg transition-colors">
@@ -238,6 +275,13 @@ export default function AdminDashboard({ onBack }: AdminDashboardProps) {
                 </tbody>
               </table>
             </div>
+          </motion.div>
+        )}
+
+        {activeTab === 'content' && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="rounded-2xl border border-black/5 bg-[#F5F5F7] p-5">
+            <h2 className="mb-5 text-xl font-bold text-[#111]">Homepage Content</h2>
+            <AdminContentManager />
           </motion.div>
         )}
 
@@ -312,7 +356,7 @@ export default function AdminDashboard({ onBack }: AdminDashboardProps) {
             <h2 className="text-xl font-bold text-[#111] mb-6">All Customers</h2>
 
             <div className="space-y-3">
-              {BackendService.getUsers().map((user) => (
+              {users.map((user) => (
                 <div key={user.id} className="flex items-center justify-between p-4 bg-[#F5F5F7] rounded-xl">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-black text-white rounded-full flex items-center justify-center font-bold">

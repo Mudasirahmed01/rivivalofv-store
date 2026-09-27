@@ -1,9 +1,15 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
-import { products, categories } from "../data/products";
 import ProductCard from "./ProductCard";
 import { Product } from "../types";
+import { useProductBySlot } from "../hooks/useProducts";
+import { ProductGridSkeleton } from "./SkeletonLoader";
+
+const categories = [
+  { slug: "tops", name: "Shirts" },
+  { slug: "bottoms", name: "Pants" },
+];
 
 interface ProductGridProps {
   onProductClick: (product: Product) => void;
@@ -11,16 +17,17 @@ interface ProductGridProps {
 
 export default function ProductGrid({ onProductClick }: ProductGridProps) {
   const [activeCategory, setActiveCategory] = useState<string>("all");
+  const { products, loading } = useProductBySlot("new_release");
 
   const filteredProducts = activeCategory === "all"
-    ? products.filter((p) => p.homepageSlot === "new_release")
+    ? products
     : products.filter(
-        (p) => p.homepageSlot === "new_release" && p.category === activeCategory
+        (p) => p.category === activeCategory
       );
 
   return (
     <section className="bg-[#FAFAFA] py-16 md:py-24 px-4 md:px-6">
-      <div className="max-w-[1440px] mx-auto">
+      <div className="max-w-360 mx-auto">
         {/* Section Header */}
         <div className="flex items-center justify-between mb-8 md:mb-12">
           <div>
@@ -67,18 +74,18 @@ export default function ProductGrid({ onProductClick }: ProductGridProps) {
         </div>
 
         {/* Product Grid */}
-        <motion.div
+        {loading ? <ProductGridSkeleton count={6} /> : <motion.div
           layout
           className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6"
         >
-          {filteredProducts.map((product, i) => (
+          {!loading && filteredProducts.map((product, i) => (
             <div key={product.id} onClick={() => onProductClick(product)}>
               <ProductCard product={product} index={i} />
             </div>
           ))}
-        </motion.div>
+        </motion.div>}
 
-        {filteredProducts.length === 0 && (
+        {!loading && filteredProducts.length === 0 && (
           <div className="text-center py-16">
             <p className="text-[#6E6E73] text-base md:text-lg">No products found in this category.</p>
           </div>

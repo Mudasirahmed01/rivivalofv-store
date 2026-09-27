@@ -28,7 +28,7 @@ export const shareProduct = async (product: {
   const shareUrl = getProductShareUrl(product.slug);
   const shareData = {
     title: `${product.title} — REVIVAL OF V`,
-    text: `Check out ${product.title} — $${product.price} at REVIVAL OF V. ${product.description.substring(0, 100)}...`,
+    text: `Check out ${product.title} — Rs ${product.price.toLocaleString("en-PK")} at REVIVAL OF V. ${product.description.substring(0, 100)}...`,
     url: shareUrl,
   };
 

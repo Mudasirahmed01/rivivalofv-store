@@ -1,9 +1,9 @@
 import { useRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { products } from "../data/products";
 import ProductCard from "./ProductCard";
 import { Product } from "../types";
+import { useProductBySlot } from "../hooks/useProducts";
 
 interface BestSellersProps {
   onProductClick: (product: Product) => void;
@@ -15,7 +15,7 @@ export default function BestSellers({ onProductClick }: BestSellersProps) {
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
-  const bestSellers = products.filter((p) => p.homepageSlot === "best_seller");
+  const { products: bestSellers } = useProductBySlot("best_seller");
 
   useEffect(() => {
     const container = scrollRef.current;

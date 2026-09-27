@@ -15,7 +15,7 @@ export default function ScrollRevealText() {
   return (
     <div
       ref={containerRef}
-      className="min-h-[120vh] md:min-h-[150vh] flex items-center justify-center bg-[#FAFAFA] px-4 md:px-6 py-20 md:py-32"
+      className="relative min-h-[120vh] md:min-h-[150vh] flex items-center justify-center bg-[#FAFAFA] px-4 md:px-6 py-20 md:py-32"
     >
       <div className="sticky top-1/2 -translate-y-1/2 max-w-5xl">
         <p className="text-xl sm:text-3xl md:text-5xl lg:text-6xl font-bold leading-tight flex flex-wrap gap-x-2 gap-y-2 md:gap-x-3 md:gap-y-3">

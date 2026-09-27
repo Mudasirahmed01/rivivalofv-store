@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Tag, X, Check } from "lucide-react";
 import { useCouponStore } from "../store/couponStore";
@@ -7,8 +7,12 @@ import { useToastStore } from "../store/toastStore";
 export default function CouponInput() {
   const [code, setCode] = useState("");
   const [isOpen, setIsOpen] = useState(false);
-  const { appliedCoupon, applyCoupon, removeCoupon } = useCouponStore();
+  const { appliedCoupon, applyCoupon, removeCoupon, fetchCoupons } = useCouponStore();
   const toast = useToastStore();
+
+  useEffect(() => {
+    fetchCoupons();
+  }, [fetchCoupons]);
 
   const handleApply = () => {
     if (!code.trim()) {

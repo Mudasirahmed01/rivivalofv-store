@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   User, Mail, Lock, Eye, EyeOff, ArrowLeft, 
-  Package, Heart, MapPin, Settings, LogOut, ChevronRight 
+  Package, Heart, MapPin, Settings, LogOut, ChevronRight, Trash2
 } from "lucide-react";
+import BackendService from "../lib/backend";
+import { formatPKR } from "../lib/currency";
 
 interface AccountPageProps {
   onBack: () => void;
@@ -14,23 +16,55 @@ export default function AccountPage({ onBack }: AccountPageProps) {
   const [isSignUp, setIsSignUp] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [activeTab, setActiveTab] = useState<"orders" | "wishlist" | "addresses" | "settings">("orders");
+  const [user, setUser] = useState<any | null>(null);
+  const [orders, setOrders] = useState<any[]>([]);
+  const [wishlistCount, setWishlistCount] = useState(0);
+  const [addresses, setAddresses] = useState<any[]>([]);
+  const [addressFormOpen, setAddressFormOpen] = useState(false);
+  const [addressForm, setAddressForm] = useState({ label: 'Home', first_name: '', last_name: '', address: '', city: '', state: '', zip_code: '', country: 'Pakistan', phone: '' });
+  const [authLoading, setAuthLoading] = useState(true);
 
-  // Mock user data
-  const user = {
-    name: "Alex Johnson",
-    email: "alex@revivalof5.com",
-    memberSince: "January 2026",
-    orders: 3,
-    wishlistItems: 5,
+  useEffect(() => {
+    BackendService.getCurrentUser()
+      .then(async (currentUser) => {
+        setUser(currentUser);
+        setIsLoggedIn(Boolean(currentUser));
+        if (currentUser) {
+          const [userOrders, wishlist] = await Promise.all([
+            BackendService.getUserOrders(currentUser.id),
+            BackendService.getUserWishlist(currentUser.id),
+            BackendService.getUserAddresses(currentUser.id),
+          ]);
+          setOrders(userOrders);
+          setWishlistCount(wishlist.length);
+          setAddresses(addresses);
+        }
+      })
+      .catch((error) => console.error("Failed to load account session:", error))
+      .finally(() => setAuthLoading(false));
+  }, []);
+
+  const displayName = user?.user_metadata?.name || user?.email?.split("@")[0] || "Customer";
+  const memberSince = user?.created_at
+    ? new Date(user.created_at).toLocaleDateString("en-US", { month: "long", year: "numeric" })
+    : "";
+  const totalSpent = orders.reduce((sum, order) => sum + Number(order.total || 0), 0);
+  const updateAddressField = (field: string, value: string) => setAddressForm((current) => ({ ...current, [field]: value }));
+  const saveAddress = async (event: React.FormEvent) => {
+    event.preventDefault();
+    const saved = await BackendService.saveAddress({ ...addressForm, is_default: addresses.length === 0 });
+    if (saved) {
+      setAddresses((current) => [...current, saved]);
+      setAddressFormOpen(false);
+      setAddressForm({ label: 'Home', first_name: '', last_name: '', address: '', city: '', state: '', zip_code: '', country: 'Pakistan', phone: '' });
+    }
   };
 
-  const mockOrders = [
-    { id: "RO5-001", date: "Feb 20, 2026", status: "Delivered", total: 285, items: 2 },
-    { id: "RO5-002", date: "Feb 15, 2026", status: "Shipped", total: 140, items: 1 },
-    { id: "RO5-003", date: "Feb 10, 2026", status: "Processing", total: 195, items: 2 },
-  ];
+  if (authLoading) {
+    return <div className="min-h-screen bg-[#FAFAFA] pt-24 px-4 text-center">Loading account...</div>;
+  }
 
-  if (!isLoggedIn) {
+  if (!isLoggedIn || !user) {
     return (
       <div className="min-h-screen bg-[#FAFAFA] pt-24 md:pt-28 pb-16 px-4">
         <div className="max-w-md mx-auto">
@@ -125,7 +159,7 @@ export default function AccountPage({ onBack }: AccountPageProps) {
                 <motion.button
                   whileHover={{ scale: 1.01 }}
                   whileTap={{ scale: 0.99 }}
-                  onClick={() => setIsLoggedIn(true)}
+                  onClick={() => setIsLoggedIn(false)}
                   className="w-full py-4 bg-black text-white rounded-xl font-semibold text-sm tracking-wider hover:bg-black/90 transition-colors mt-2"
                 >
                   {isSignUp ? "CREATE ACCOUNT" : "SIGN IN"}
@@ -192,16 +226,20 @@ export default function AccountPage({ onBack }: AccountPageProps) {
           <div className="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6">
             <div className="w-16 h-16 md:w-20 md:h-20 bg-black rounded-2xl flex items-center justify-center shrink-0">
               <span className="text-2xl md:text-3xl font-bold text-white">
-                {user.name.charAt(0)}
+                {displayName.charAt(0).toUpperCase()}
               </span>
             </div>
             <div className="flex-1">
-              <h1 className="text-xl md:text-2xl font-bold text-[#111]">{user.name}</h1>
+              <h1 className="text-xl md:text-2xl font-bold text-[#111]">{displayName}</h1>
               <p className="text-sm text-[#6E6E73]">{user.email}</p>
-              <p className="text-xs text-[#6E6E73] mt-1">Member since {user.memberSince}</p>
+              <p className="text-xs text-[#6E6E73] mt-1">Member since {memberSince}</p>
             </div>
             <button
-              onClick={() => setIsLoggedIn(false)}
+              onClick={async () => {
+                await BackendService.logoutUser();
+                setUser(null);
+                setIsLoggedIn(false);
+              }}
               className="flex items-center gap-2 px-4 py-2 text-sm text-[#6E6E73] hover:text-red-500 border border-black/10 rounded-xl hover:border-red-200 transition-colors"
             >
               <LogOut size={14} />
@@ -212,19 +250,19 @@ export default function AccountPage({ onBack }: AccountPageProps) {
           {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-6 border-t border-black/5">
             <div className="text-center">
-              <p className="text-2xl font-bold text-[#111]">{user.orders}</p>
+              <p className="text-2xl font-bold text-[#111]">{orders.length}</p>
               <p className="text-xs text-[#6E6E73]">Orders</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-[#111]">{user.wishlistItems}</p>
+              <p className="text-2xl font-bold text-[#111]">{wishlistCount}</p>
               <p className="text-xs text-[#6E6E73]">Wishlist</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-[#111]">2</p>
+              <p className="text-2xl font-bold text-[#111]">0</p>
               <p className="text-xs text-[#6E6E73]">Addresses</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-[#111]">$620</p>
+              <p className="text-2xl font-bold text-[#111]">{formatPKR(totalSpent)}</p>
               <p className="text-xs text-[#6E6E73]">Total Spent</p>
             </div>
           </div>
@@ -264,7 +302,12 @@ export default function AccountPage({ onBack }: AccountPageProps) {
           >
             {activeTab === "orders" && (
               <div className="space-y-3">
-                {mockOrders.map((order) => (
+                {orders.length === 0 && (
+                  <div className="rounded-xl border border-black/5 bg-white p-8 text-center text-sm text-[#6E6E73]">
+                    No orders found yet.
+                  </div>
+                )}
+                {orders.map((order) => (
                   <div
                     key={order.id}
                     className="bg-white rounded-xl p-4 md:p-5 border border-black/5 hover:shadow-md transition-shadow"
@@ -272,17 +315,17 @@ export default function AccountPage({ onBack }: AccountPageProps) {
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                       <div>
                         <p className="text-sm font-bold text-[#111]">Order #{order.id}</p>
-                        <p className="text-xs text-[#6E6E73] mt-0.5">{order.date} • {order.items} items</p>
+                        <p className="text-xs text-[#6E6E73] mt-0.5">{new Date(order.created_at).toLocaleDateString()} • {order.items?.length || 0} items</p>
                       </div>
                       <div className="flex items-center gap-3">
                         <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          order.status === "Delivered" ? "bg-green-50 text-green-700" :
-                          order.status === "Shipped" ? "bg-blue-50 text-blue-700" :
+                          order.status === "delivered" ? "bg-green-50 text-green-700" :
+                          order.status === "shipped" ? "bg-blue-50 text-blue-700" :
                           "bg-amber-50 text-amber-700"
                         }`}>
                           {order.status}
                         </span>
-                        <span className="text-sm font-bold text-[#111]">${order.total}</span>
+                        <span className="text-sm font-bold text-[#111]">{formatPKR(order.total)}</span>
                         <ChevronRight size={16} className="text-[#6E6E73]" />
                       </div>
                     </div>
@@ -301,25 +344,18 @@ export default function AccountPage({ onBack }: AccountPageProps) {
 
             {activeTab === "addresses" && (
               <div className="space-y-3">
-                <div className="bg-white rounded-xl p-5 border border-black/5">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <p className="text-sm font-bold text-[#111]">Home</p>
-                        <span className="px-2 py-0.5 bg-black text-white text-[10px] rounded-full">Default</span>
-                      </div>
-                      <p className="text-xs text-[#6E6E73] leading-relaxed">
-                        123 Fashion Street, Apt 4B<br />
-                        New York, NY 10001<br />
-                        United States
-                      </p>
-                    </div>
-                    <button className="text-xs text-[#6E6E73] hover:text-[#111]">Edit</button>
+                {addresses.map((savedAddress) => (
+                  <div key={savedAddress.id} className="flex items-start justify-between rounded-xl border border-black/5 bg-white p-5">
+                    <div><p className="text-sm font-bold text-[#111]">{savedAddress.label}</p><p className="mt-2 text-xs leading-relaxed text-[#6E6E73]">{savedAddress.first_name} {savedAddress.last_name}<br />{savedAddress.address}<br />{savedAddress.city}, {savedAddress.state} {savedAddress.zip_code}<br />{savedAddress.country}</p></div>
+                    <button onClick={async () => { if (await BackendService.deleteAddress(savedAddress.id)) setAddresses((current) => current.filter((item) => item.id !== savedAddress.id)); }} className="text-red-600" aria-label="Delete address"><Trash2 size={15} /></button>
                   </div>
-                </div>
-                <button className="w-full py-4 border-2 border-dashed border-black/10 rounded-xl text-sm text-[#6E6E73] hover:border-black/30 hover:text-[#111] transition-colors">
-                  + Add New Address
-                </button>
+                ))}
+                {addresses.length === 0 && <div className="rounded-xl border border-black/5 bg-white p-8 text-center"><MapPin size={40} className="mx-auto mb-3 text-[#6E6E73]" /><p className="text-sm font-semibold text-[#111] mb-1">No saved addresses</p></div>}
+                {!addressFormOpen && <button onClick={() => setAddressFormOpen(true)} className="w-full rounded-xl border-2 border-dashed border-black/10 py-4 text-sm text-[#6E6E73]">+ Add New Address</button>}
+                {addressFormOpen && <form onSubmit={saveAddress} className="grid gap-3 rounded-xl border border-black/5 bg-white p-5 md:grid-cols-2">
+                  {Object.entries(addressForm).map(([field, value]) => <input key={field} required={!['label', 'country'].includes(field)} value={value} onChange={(event) => updateAddressField(field, event.target.value)} placeholder={field.replace('_', ' ')} className="rounded-xl bg-[#F5F5F7] p-3 text-sm" />)}
+                  <div className="flex gap-2 md:col-span-2"><button className="rounded-full bg-black px-5 py-3 text-sm font-semibold text-white">Save Address</button><button type="button" onClick={() => setAddressFormOpen(false)} className="rounded-full border border-black/10 px-5 py-3 text-sm">Cancel</button></div>
+                </form>}
               </div>
             )}
 

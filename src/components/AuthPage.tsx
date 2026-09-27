@@ -17,27 +17,31 @@ export default function AuthPage({ onBack, onLoginSuccess }: AuthPageProps) {
     phone: '',
   });
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setNotice('');
     setLoading(true);
 
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 800));
-
     if (isLogin) {
-      const result = BackendService.loginUser(formData.email, formData.password);
+      const result = await BackendService.loginUser(formData.email, formData.password);
       if (result.success) {
         onLoginSuccess();
       } else {
         setError(result.message);
       }
     } else {
-      const result = BackendService.registerUser(formData);
+      const result = await BackendService.registerUser(formData);
       if (result.success) {
-        onLoginSuccess();
+        if (result.session) {
+          onLoginSuccess();
+        } else {
+          setNotice(result.message);
+          setIsLogin(true);
+        }
       } else {
         setError(result.message);
       }
@@ -74,6 +78,12 @@ export default function AuthPage({ onBack, onLoginSuccess }: AuthPageProps) {
           {error && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
               <p className="text-sm text-red-600">{error}</p>
+            </div>
+          )}
+
+          {notice && (
+            <div className="mb-6 rounded-lg border border-green-200 bg-green-50 p-4">
+              <p className="text-sm text-green-700">{notice}</p>
             </div>
           )}
 
@@ -168,6 +178,7 @@ export default function AuthPage({ onBack, onLoginSuccess }: AuthPageProps) {
                 onClick={() => {
                   setIsLogin(!isLogin);
                   setError('');
+                  setNotice('');
                 }}
                 className="text-black font-semibold hover:underline"
               >

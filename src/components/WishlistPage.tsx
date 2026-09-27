@@ -4,6 +4,9 @@ import { useWishlistStore } from "../store/wishlistStore";
 import { Product } from "../types";
 import ProductCard from "./ProductCard";
 import { formatPKR } from "../lib/currency";
+import { ProductCardSkeleton } from "./SkeletonLoader";
+import { useEffect, useState } from "react";
+import BackendService from "../lib/backend";
 
 interface WishlistPageProps {
   onBack: () => void;
@@ -11,12 +14,21 @@ interface WishlistPageProps {
 }
 
 export default function WishlistPage({ onBack, onProductClick }: WishlistPageProps) {
-  const { items, removeItem, clearWishlist } = useWishlistStore();
+  const { items, removeItem, clearWishlist, hydrateWishlist } = useWishlistStore();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadWishlist = async () => {
+      setLoading(true);
+      await hydrateWishlist();
+      setLoading(false);
+    };
+    loadWishlist();
+  }, [hydrateWishlist]);
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] pt-20 md:pt-28 pb-16 px-4 md:px-6">
       <div className="max-w-[1440px] mx-auto">
-        {/* Back Button */}
         <button
           onClick={onBack}
           className="flex items-center gap-2 text-xs md:text-sm text-[#6E6E73] hover:text-[#111] transition-colors mb-6 md:mb-8"
@@ -25,7 +37,6 @@ export default function WishlistPage({ onBack, onProductClick }: WishlistPagePro
           Back to Home
         </button>
 
-        {/* Page Header */}
         <div className="flex items-center justify-between mb-8 md:mb-12">
           <div>
             <p className="text-xs md:text-sm font-bold text-[#6E6E73] tracking-wider mb-2">
@@ -50,8 +61,13 @@ export default function WishlistPage({ onBack, onProductClick }: WishlistPagePro
           )}
         </div>
 
-        {/* Wishlist Items */}
-        {items.length === 0 ? (
+        {loading ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
+            {[...Array(4)].map((_, i) => (
+              <ProductCardSkeleton key={i} />
+            ))}
+          </div>
+        ) : items.length === 0 ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -89,9 +105,11 @@ export default function WishlistPage({ onBack, onProductClick }: WishlistPagePro
                 <div onClick={() => onProductClick(product)}>
                   <ProductCard product={product} index={i} />
                 </div>
-                {/* Remove Button */}
                 <button
-                  onClick={() => removeItem(product.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeItem(product.id);
+                  }}
                   className="absolute top-2 right-2 md:top-3 md:right-3 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-red-500 hover:text-white text-[#111] transition-all duration-200 z-20 shadow-md"
                   title="Remove from wishlist"
                 >
@@ -102,8 +120,7 @@ export default function WishlistPage({ onBack, onProductClick }: WishlistPagePro
           </motion.div>
         )}
 
-        {/* Summary */}
-        {items.length > 0 && (
+        {!loading && items.length > 0 && (
           <div className="mt-12 p-6 bg-white rounded-2xl border border-black/5">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-[#111]">Wishlist Summary</h3>

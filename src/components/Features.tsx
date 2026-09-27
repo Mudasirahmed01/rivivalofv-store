@@ -1,11 +1,13 @@
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import BackendService from "../lib/backend";
 import { Truck, Shield, Recycle, Award } from "lucide-react";
 
 const features = [
   {
     icon: Truck,
     title: "Free Shipping",
-    description: "Orders over $200",
+    description: "Admin configured",
   },
   {
     icon: Shield,
@@ -25,9 +27,11 @@ const features = [
 ];
 
 export default function Features() {
+  const [freeShippingThreshold, setFreeShippingThreshold] = useState<number | null>(null);
+  useEffect(() => { BackendService.getStoreSettings().then((settings) => setFreeShippingThreshold(Number(settings.checkout?.free_shipping_threshold || 0))); }, []);
   return (
     <section className="bg-white border-y border-black/5 py-8 md:py-12 px-4 md:px-6">
-      <div className="max-w-[1440px] mx-auto">
+      <div className="max-w-360 mx-auto">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
           {features.map((feature, i) => (
             <motion.div
@@ -46,8 +50,8 @@ export default function Features() {
                 <h3 className="text-xs md:text-sm font-semibold text-[#111] mb-0.5">
                   {feature.title}
                 </h3>
-                <p className="text-[10px] md:text-xs text-[#6E6E73]">
-                  {feature.description}
+                  <p className="text-[10px] md:text-xs text-[#6E6E73]">
+                  {i === 0 && freeShippingThreshold ? `Orders over Rs ${freeShippingThreshold.toLocaleString('en-PK')}` : feature.description}
                 </p>
               </div>
             </motion.div>

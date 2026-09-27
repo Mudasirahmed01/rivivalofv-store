@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, X, SlidersHorizontal, ChevronDown } from "lucide-react";
-import { products } from "../data/products";
 import { Product } from "../types";
 import { formatPKR } from "../lib/currency";
 import RatingStars from "./RatingStars";
 import { useReviewsStore } from "../store/reviewsStore";
+import { useProducts } from "../hooks/useProducts";
 
 interface AdvancedSearchProps {
   isOpen: boolean;
@@ -20,6 +20,7 @@ export default function AdvancedSearch({ isOpen, onClose, onProductClick }: Adva
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 100000]);
   const [sortBy, setSortBy] = useState("relevance");
   const { getAverageRating } = useReviewsStore();
+  const { products } = useProducts();
 
   // Filter and search products
   const filteredProducts = products

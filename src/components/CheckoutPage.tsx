@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Minus, Plus, X, Trash2, Check, Truck, Shield, CreditCard, Banknote } from "lucide-react";
+import { ArrowLeft, Minus, Plus, X, Trash2, Check, Truck, Shield, Banknote } from "lucide-react";
 import { useCartStore } from "../store/cartStore";
 import { useCouponStore } from "../store/couponStore";
-import { formatPKR, USD_TO_PKR } from "../lib/currency";
+import { formatPKR } from "../lib/currency";
 import EmailConfirmation from "./EmailConfirmation";
 import CouponInput from "./CouponInput";
+import BackendService from "../lib/backend";
 
 interface CheckoutPageProps {
   onBack: () => void;
@@ -19,6 +20,10 @@ export default function CheckoutPage({ onBack }: CheckoutPageProps) {
   const [step, setStep] = useState<CheckoutStep>("info");
   const [orderTotal, setOrderTotal] = useState(0);
   const [orderItems, setOrderItems] = useState<typeof items>([]);
+  const [orderNumber, setOrderNumber] = useState<string | null>(null);
+  const [orderError, setOrderError] = useState("");
+  const [placingOrder, setPlacingOrder] = useState(false);
+  const [storeSettings, setStoreSettings] = useState<any | null>(null);
   const [formData, setFormData] = useState({
     email: "",
     firstName: "",
@@ -30,32 +35,63 @@ export default function CheckoutPage({ onBack }: CheckoutPageProps) {
     zipCode: "",
     country: "Pakistan",
     phone: "",
-    paymentMethod: "card" as "card" | "cod",
-    cardNumber: "",
-    cardExpiry: "",
-    cardCvc: "",
-    cardName: "",
+    paymentMethod: "cod" as const,
   });
+
+  useEffect(() => {
+    BackendService.getStoreSettings().then((settings) => setStoreSettings(settings.checkout || {}));
+  }, []);
 
   const subtotal = getTotalPrice();
   const discount = calculateDiscount(subtotal);
-  const shipping = subtotal >= 200 ? 0 : 15;
-  const tax = Math.round((subtotal - discount) * 0.08 * 100) / 100;
+  const freeShippingThreshold = Number(storeSettings?.free_shipping_threshold || 0);
+  const deliveryCharge = Number(storeSettings?.delivery_charge || 0);
+  const taxRate = Number(storeSettings?.tax_rate || 0);
+  const shipping = subtotal >= freeShippingThreshold && freeShippingThreshold > 0 ? 0 : deliveryCharge;
+  const tax = Math.round((subtotal - discount) * (taxRate / 100) * 100) / 100;
   const total = subtotal - discount + shipping + tax;
 
   const updateField = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handlePlaceOrder = () => {
-    // Save the total and items before clearing cart
+  const handlePlaceOrder = async () => {
+    if (placingOrder) return;
+    setOrderError("");
+    setPlacingOrder(true);
+
+    const result = await BackendService.createOrder({
+      items,
+      email: formData.email,
+      total,
+      shippingAddress: {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        address: formData.apartment
+          ? `${formData.address}, ${formData.apartment}`
+          : formData.address,
+        city: formData.city,
+        state: formData.state,
+        zipCode: formData.zipCode,
+        country: formData.country,
+        phone: formData.phone,
+      },
+      paymentMethod: formData.paymentMethod,
+      couponCode: appliedCoupon?.code,
+      discount,
+    });
+
+    setPlacingOrder(false);
+    if (!result.success) {
+      setOrderError(result.message || "Unable to place your order. Please try again.");
+      return;
+    }
+
     setOrderTotal(total);
     setOrderItems([...items]);
+    setOrderNumber(result.order?.id || null);
+    clearCart();
     setStep("success");
-    // Clear cart after a small delay to ensure success page renders with correct data
-    setTimeout(() => {
-      clearCart();
-    }, 100);
   };
 
   const isInfoValid = formData.email && formData.firstName && formData.lastName && formData.phone;
@@ -104,7 +140,7 @@ export default function CheckoutPage({ onBack }: CheckoutPageProps) {
             Thank you for your purchase. Your order has been placed successfully.
           </p>
           <p className="text-xs text-[#6E6E73] mb-8">
-            Order #RO5-{Math.floor(Math.random() * 90000 + 10000)} • Confirmation sent to {formData.email || "your email"}
+            Order #{orderNumber || "submitted"} • Confirmation sent to {formData.email || "your email"}
           </p>
           <div className="p-4 bg-white rounded-xl border border-black/5 mb-6 text-left">
             <p className="text-xs text-[#6E6E73] mb-1">Total Amount</p>
@@ -120,7 +156,7 @@ export default function CheckoutPage({ onBack }: CheckoutPageProps) {
           {/* Email Confirmation Preview */}
           <EmailConfirmation
             email={formData.email}
-            orderNumber={`RO5-${Math.floor(Math.random() * 90000 + 10000)}`}
+            orderNumber={orderNumber || "submitted"}
             totalAmount={formatPKR(orderTotal)}
             items={orderItems.map((item) => ({
               title: item.product.title,
@@ -136,7 +172,7 @@ export default function CheckoutPage({ onBack }: CheckoutPageProps) {
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] pt-20 md:pt-28 pb-16">
-      <div className="max-w-[1200px] mx-auto px-4 md:px-6">
+      <div className="max-w-300 mx-auto px-4 md:px-6">
         {/* Back Button */}
         <button
           onClick={onBack}
@@ -375,6 +411,11 @@ export default function CheckoutPage({ onBack }: CheckoutPageProps) {
                   transition={{ duration: 0.3 }}
                 >
                   <h2 className="text-xl md:text-2xl font-bold text-[#111] mb-6">Payment Method</h2>
+                  {orderError && (
+                    <p className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                      {orderError}
+                    </p>
+                  )}
                   
                   {/* Cash on Delivery Only */}
                   <div className="mb-6">
@@ -405,7 +446,7 @@ export default function CheckoutPage({ onBack }: CheckoutPageProps) {
                     <motion.button
                       whileTap={{ scale: 0.98 }}
                       onClick={handlePlaceOrder}
-                      disabled={!isPaymentValid}
+                      disabled={!isPaymentValid || placingOrder}
                       className={`flex-1 py-4 font-bold text-sm tracking-wider rounded-full transition-all flex items-center justify-center gap-2 ${
                         isPaymentValid
                           ? "bg-black text-white hover:bg-black/90"
@@ -413,7 +454,7 @@ export default function CheckoutPage({ onBack }: CheckoutPageProps) {
                       }`}
                     >
                       <Shield size={14} />
-                      PLACE ORDER — {formatPKR(total)}
+                      {placingOrder ? "PLACING ORDER..." : `PLACE ORDER — ${formatPKR(total)}`}
                     </motion.button>
                   </div>
                 </motion.div>
@@ -483,9 +524,9 @@ export default function CheckoutPage({ onBack }: CheckoutPageProps) {
               </div>
 
               {/* Free Shipping Note */}
-              {subtotal < 200 && (
+              {freeShippingThreshold > 0 && subtotal < freeShippingThreshold && (
                 <p className="text-[10px] text-[#6E6E73] text-center mt-3">
-                  Add {formatPKR(200 - subtotal)} more for free shipping
+                  Add {formatPKR(freeShippingThreshold - subtotal)} more for free shipping
                 </p>
               )}
             </div>

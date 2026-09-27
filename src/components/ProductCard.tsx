@@ -65,13 +65,19 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
     >
       {/* Image - Full Bleed, No Border Radius */}
       <div className="relative aspect-[3/4] overflow-hidden bg-[#ECECEC]">
-        <motion.img
-          src={isHovered && secondaryImage ? secondaryImage.url : primaryImage.url}
-          alt={primaryImage.altText}
-          className="w-full h-full object-cover"
-          animate={{ scale: isHovered ? 1.06 : 1 }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        />
+        {primaryImage ? (
+          <motion.img
+            src={isHovered && secondaryImage ? secondaryImage.url : primaryImage.url}
+            alt={primaryImage.altText || product.title}
+            className="w-full h-full object-cover"
+            animate={{ scale: isHovered ? 1.06 : 1 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center px-6 text-center text-sm font-semibold text-[#6E6E73]">
+            Image coming soon
+          </div>
+        )}
 
         {/* Dark Overlay on Hover */}
         <motion.div

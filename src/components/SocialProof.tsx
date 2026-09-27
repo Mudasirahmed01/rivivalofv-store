@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingBag, Eye } from "lucide-react";
-import { products } from "../data/products";
+import { useProducts } from "../hooks/useProducts";
 
 interface Notification {
   id: number;
@@ -16,12 +16,14 @@ const locations = ["Lahore", "Karachi", "Islamabad", "Rawalpindi", "Faisalabad",
 const times = ["2 minutes ago", "5 minutes ago", "10 minutes ago", "15 minutes ago", "Just now"];
 
 export default function SocialProof() {
+  const { products } = useProducts();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [currentNotification, setCurrentNotification] = useState<Notification | null>(null);
 
   useEffect(() => {
     // Generate initial notifications
-    const generateNotification = (): Notification => {
+    const generateNotification = (): Notification | null => {
+      if (products.length === 0) return null;
       const randomProduct = products[Math.floor(Math.random() * products.length)];
       const randomLocation = locations[Math.floor(Math.random() * locations.length)];
       const randomTime = times[Math.floor(Math.random() * times.length)];
@@ -40,7 +42,7 @@ export default function SocialProof() {
     // Show notifications periodically
     const interval = setInterval(() => {
       const newNotification = generateNotification();
-      setCurrentNotification(newNotification);
+      if (newNotification) setCurrentNotification(newNotification);
 
       // Hide after 5 seconds
       setTimeout(() => {
@@ -50,7 +52,8 @@ export default function SocialProof() {
 
     // Show first notification after 3 seconds
     const timeout = setTimeout(() => {
-      setCurrentNotification(generateNotification());
+      const newNotification = generateNotification();
+      if (newNotification) setCurrentNotification(newNotification);
       setTimeout(() => setCurrentNotification(null), 5000);
     }, 3000);
 
@@ -58,7 +61,7 @@ export default function SocialProof() {
       clearInterval(interval);
       clearTimeout(timeout);
     };
-  }, []);
+  }, [products]);
 
   return (
     <AnimatePresence>

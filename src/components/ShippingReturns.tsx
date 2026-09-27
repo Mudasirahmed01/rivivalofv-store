@@ -1,4 +1,6 @@
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import BackendService from "../lib/backend";
 import { ArrowLeft, Package, RotateCcw, Truck, Shield, Clock, AlertCircle } from "lucide-react";
 
 interface ShippingReturnsProps {
@@ -6,6 +8,14 @@ interface ShippingReturnsProps {
 }
 
 export default function ShippingReturns({ onBack }: ShippingReturnsProps) {
+  const [checkoutSettings, setCheckoutSettings] = useState<any | null>(null);
+
+  useEffect(() => {
+    BackendService.getStoreSettings().then((settings) => setCheckoutSettings(settings.checkout || {}));
+  }, []);
+
+  const freeShippingThreshold = Number(checkoutSettings?.free_shipping_threshold || 0);
+  const deliveryCharge = Number(checkoutSettings?.delivery_charge || 0);
   return (
     <div className="min-h-screen bg-[#FAFAFA] pt-20 md:pt-28 pb-16 px-4 md:px-6">
       <div className="max-w-3xl mx-auto">
@@ -45,7 +55,7 @@ export default function ShippingReturns({ onBack }: ShippingReturnsProps) {
           <div className="bg-white p-4 rounded-xl border border-black/5 text-center">
             <Truck size={20} className="mx-auto mb-2 text-[#111]" />
             <p className="text-xs font-bold text-[#111]">Free Shipping</p>
-            <p className="text-[10px] text-[#6E6E73]">Orders over Rs 50,000</p>
+            <p className="text-[10px] text-[#6E6E73]">{freeShippingThreshold ? `Orders over Rs ${freeShippingThreshold.toLocaleString('en-PK')}` : 'See checkout settings'}</p>
           </div>
           <div className="bg-white p-4 rounded-xl border border-black/5 text-center">
             <Clock size={20} className="mx-auto mb-2 text-[#111]" />
@@ -89,11 +99,11 @@ export default function ShippingReturns({ onBack }: ShippingReturnsProps) {
               <ul className="space-y-2 ml-4">
                 <li className="flex items-start gap-2">
                   <span className="text-[#111]">•</span>
-                  <span><strong className="text-[#111]">Orders above Rs 50,000:</strong> FREE shipping</span>
+                  <span><strong className="text-[#111]">Orders above Rs {freeShippingThreshold.toLocaleString('en-PK')}:</strong> FREE shipping</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-[#111]">•</span>
-                  <span><strong className="text-[#111]">Orders below Rs 50,000:</strong> Flat rate of Rs 250</span>
+                  <span><strong className="text-[#111]">Orders below the threshold:</strong> Flat rate of Rs {deliveryCharge.toLocaleString('en-PK')}</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-[#111]">•</span>

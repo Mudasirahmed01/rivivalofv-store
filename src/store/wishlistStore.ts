@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { Product } from "../types";
+import BackendService from "../lib/backend";
 
 interface WishlistStore {
   items: Product[];
@@ -8,6 +9,7 @@ interface WishlistStore {
   isInWishlist: (productId: string) => boolean;
   toggleItem: (product: Product) => void;
   clearWishlist: () => void;
+  hydrateWishlist: () => Promise<void>;
 }
 
 // Load wishlist from localStorage
@@ -31,6 +33,14 @@ const saveWishlistToStorage = (items: Product[]) => {
 
 export const useWishlistStore = create<WishlistStore>((set, get) => ({
   items: loadWishlistFromStorage(),
+
+  hydrateWishlist: async () => {
+    const remoteItems = await BackendService.getUserWishlist();
+    if (remoteItems.length > 0) {
+      saveWishlistToStorage(remoteItems);
+      set({ items: remoteItems });
+    }
+  },
 
   addItem: (product: Product) => {
     set((state) => {
@@ -57,8 +67,10 @@ export const useWishlistStore = create<WishlistStore>((set, get) => ({
     const isIn = get().isInWishlist(product.id);
     if (isIn) {
       get().removeItem(product.id);
+      void BackendService.removeFromWishlist(product.id);
     } else {
       get().addItem(product);
+      void BackendService.addToWishlist(product.id);
     }
   },
 

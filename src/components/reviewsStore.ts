@@ -15,30 +15,41 @@ export interface Review {
 
 interface ReviewsStore {
   reviews: Review[];
+  loading: boolean;
+  fetchReviews: () => Promise<void>;
   addReview: (review: Omit<Review, "id" | "date" | "helpful">) => Promise<void>;
   getReviewsByProduct: (productId: string) => Review[];
   getAverageRating: (productId: string) => number;
   getTotalReviews: (productId: string) => number;
+  markReviewHelpful: (reviewId: string) => Promise<void>;
 }
-
-const mapReview = (review: any): Review => ({
-  id: review.id,
-  productId: review.productId ?? review.product_id,
-  userName: review.userName ?? review.user_name,
-  rating: review.rating,
-  title: review.title,
-  comment: review.comment,
-  date: review.date ?? review.created_at,
-  helpful: review.helpful ?? 0,
-  verified: review.verified ?? false,
-});
 
 export const useReviewsStore = create<ReviewsStore>((set, get) => ({
   reviews: [],
+  loading: false,
+
+  fetchReviews: async () => {
+    set({ loading: true });
+    try {
+      const allReviews = await BackendService.getAllReviews();
+      set({ reviews: allReviews, loading: false });
+    } catch (error) {
+      console.error("Error fetching reviews:", error);
+      set({ loading: false });
+    }
+  },
 
   addReview: async (review) => {
-    const createdReview = await BackendService.addReview(review);
-    if (createdReview) set((state) => ({ reviews: [mapReview(createdReview), ...state.reviews] }));
+    try {
+      const newReview = await BackendService.addReview(review);
+      if (newReview) {
+        set((state) => ({
+          reviews: [newReview, ...state.reviews],
+        }));
+      }
+    } catch (error) {
+      console.error("Error adding review:", error);
+    }
   },
 
   getReviewsByProduct: (productId: string) => {
@@ -55,8 +66,17 @@ export const useReviewsStore = create<ReviewsStore>((set, get) => ({
   getTotalReviews: (productId: string) => {
     return get().reviews.filter((r) => r.productId === productId).length;
   },
-}));
 
-BackendService.getAllReviews()
-  .then((reviews) => useReviewsStore.setState({ reviews: reviews.map(mapReview) }))
-  .catch((error) => console.error("Failed to load reviews:", error));
+  markReviewHelpful: async (reviewId: string) => {
+    try {
+      await BackendService.markReviewHelpful(reviewId);
+      set((state) => ({
+        reviews: state.reviews.map((r) =>
+          r.id === reviewId ? { ...r, helpful: r.helpful + 1 } : r
+        ),
+      }));
+    } catch (error) {
+      console.error("Error marking review helpful:", error);
+    }
+  },
+}));

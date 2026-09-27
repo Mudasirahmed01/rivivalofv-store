@@ -28,22 +28,25 @@ import ThemeToggle from "./components/ThemeToggle";
 import LiveChat from "./components/LiveChat";
 import SocialProof from "./components/SocialProof";
 import AuthPage from "./components/AuthPage";
-import AdminDashboard from "./components/AdminDashboard";
+import NewReleasesPage from "./components/NewReleasesPage";
+import BestSellersPage from "./components/BestSellersPage";
+import ShirtsPage from "./components/ShirtsPage";
+import PantsPage from "./components/PantsPage";
 import SmoothScroll from "./components/SmoothScroll";
 import { Product } from "./types";
-import { products } from "./data/products";
 import { getProductSlugFromUrl, clearProductHash } from "./lib/shareUtils";
+import BackendService from "./lib/backend";
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState<"home" | "account" | "all-products" | "product-detail" | "checkout" | "wishlist" | "shipping" | "terms" | "privacy" | "contact" | "auth" | "admin">("home");
+  const [currentPage, setCurrentPage] = useState<"home" | "account" | "all-products" | "product-detail" | "checkout" | "wishlist" | "shipping" | "terms" | "privacy" | "contact" | "auth" | "new-releases" | "best-sellers" | "shirts" | "pants">("home");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   // Check URL hash on mount and when it changes
   useEffect(() => {
-    const checkUrlHash = () => {
+    const checkUrlHash = async () => {
       const slug = getProductSlugFromUrl();
       if (slug) {
-        const product = products.find((p) => p.slug === slug);
+        const product = await BackendService.getProductBySlug(slug);
         if (product) {
           setSelectedProduct(product);
           setCurrentPage("product-detail");
@@ -91,11 +94,19 @@ export default function App() {
     <ErrorBoundary>
     <SmoothScroll>
     <div className="min-h-screen bg-[#FAFAFA] font-sans antialiased">
-      <Header onAccountClick={() => setCurrentPage("account")} onWishlistClick={handleGoToWishlist} />
+      <Header
+        onAccountClick={async () => {
+          const currentUser = await BackendService.getCurrentUser();
+          setCurrentPage(currentUser ? "account" : "auth");
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }}
+        onWishlistClick={handleGoToWishlist}
+        onNavigate={(page) => setCurrentPage(page as any)}
+      />
       <CartDrawer onCheckout={handleGoToCheckout} />
       <BackToTop />
       <ToastContainer />
-      
+
       {currentPage === "home" && (
         <main>
           <Hero />
@@ -103,7 +114,7 @@ export default function App() {
           <Features />
           <ScrollRevealText />
           <ProductGrid onProductClick={handleProductClick} />
-          <BentoGrid />
+          <BentoGrid onNavigate={(page) => setCurrentPage(page as any)} />
           <BestSellers onProductClick={handleProductClick} />
           <FeaturedProducts onViewAll={handleViewAllProducts} onProductClick={handleProductClick} />
           <RecentlyViewed onProductClick={handleProductClick} />
@@ -119,8 +130,8 @@ export default function App() {
       )}
 
       {currentPage === "product-detail" && selectedProduct && (
-        <ProductDetailPage 
-          product={selectedProduct} 
+        <ProductDetailPage
+          product={selectedProduct}
           onBack={handleBackToHome}
           onProductClick={handleProductClick}
         />
@@ -151,14 +162,26 @@ export default function App() {
       )}
 
       {currentPage === "auth" && (
-        <AuthPage 
-          onBack={handleBackToHome} 
+        <AuthPage
+          onBack={handleBackToHome}
           onLoginSuccess={() => setCurrentPage("account")}
         />
       )}
 
-      {currentPage === "admin" && (
-        <AdminDashboard onBack={handleBackToHome} />
+      {currentPage === "new-releases" && (
+        <NewReleasesPage onBack={handleBackToHome} onProductClick={handleProductClick} />
+      )}
+
+      {currentPage === "best-sellers" && (
+        <BestSellersPage onBack={handleBackToHome} onProductClick={handleProductClick} />
+      )}
+
+      {currentPage === "shirts" && (
+        <ShirtsPage onBack={handleBackToHome} onProductClick={handleProductClick} />
+      )}
+
+      {currentPage === "pants" && (
+        <PantsPage onBack={handleBackToHome} onProductClick={handleProductClick} />
       )}
 
       <Footer onNavigate={setCurrentPage} />
