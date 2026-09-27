@@ -6,6 +6,7 @@
 import { useState, useEffect } from 'react';
 import BackendService from '../lib/backend';
 import { Product } from '../types';
+import { filterVisibleProducts, getStorefrontVisibility, isStorefrontCategoryVisible } from '../lib/storefrontVisibility';
 
 // ============================================
 // HOOK: useProducts
@@ -23,8 +24,8 @@ export const useProducts = () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await BackendService.getProducts();
-      setProducts(data);
+      const [data, visibility] = await Promise.all([BackendService.getProducts(), getStorefrontVisibility()]);
+      setProducts(filterVisibleProducts(data, visibility));
     } catch (err) {
       setError('Failed to fetch products');
       console.error('❌ Error in useProducts:', err);
@@ -57,8 +58,8 @@ export const useProductByCategory = (category: string) => {
     try {
       setLoading(true);
       setError(null);
-      const data = await BackendService.getProductsByCategory(category);
-      setProducts(data);
+      const [data, visibility] = await Promise.all([BackendService.getProductsByCategory(category), getStorefrontVisibility()]);
+      setProducts(isStorefrontCategoryVisible(category, visibility) ? filterVisibleProducts(data, visibility) : []);
     } catch (err) {
       setError('Failed to fetch products by category');
       console.error('❌ Error in useProductByCategory:', err);
@@ -93,8 +94,8 @@ export const useProductBySlot = (slot: string) => {
     try {
       setLoading(true);
       setError(null);
-      const data = await BackendService.getProductsBySlot(slot);
-      setProducts(data);
+      const [data, visibility] = await Promise.all([BackendService.getProductsBySlot(slot), getStorefrontVisibility()]);
+      setProducts(visibility.disabledSections.includes('new-releases') && slot === 'new_release' ? [] : filterVisibleProducts(data, visibility));
     } catch (err) {
       setError('Failed to fetch products by slot');
       console.error('❌ Error in useProductBySlot:', err);
@@ -129,8 +130,8 @@ export const useProductBySlug = (slug: string) => {
     try {
       setLoading(true);
       setError(null);
-      const data = await BackendService.getProductBySlug(slug);
-      setProduct(data);
+      const [data, visibility] = await Promise.all([BackendService.getProductBySlug(slug), getStorefrontVisibility()]);
+      setProduct(data && isStorefrontCategoryVisible(data.category, visibility) ? data : null);
     } catch (err) {
       setError('Failed to fetch product');
       console.error('❌ Error in useProductBySlug:', err);
@@ -165,8 +166,8 @@ export const useProductById = (id: string) => {
     try {
       setLoading(true);
       setError(null);
-      const data = await BackendService.getProductById(id);
-      setProduct(data);
+      const [data, visibility] = await Promise.all([BackendService.getProductById(id), getStorefrontVisibility()]);
+      setProduct(data && isStorefrontCategoryVisible(data.category, visibility) ? data : null);
     } catch (err) {
       setError('Failed to fetch product');
       console.error('❌ Error in useProductById:', err);
@@ -208,7 +209,8 @@ export const useRelatedProducts = (
       try {
         setLoading(true);
         setError(null);
-        const allProducts = await BackendService.getProductsByCategory(category);
+        const [categoryProducts, visibility] = await Promise.all([BackendService.getProductsByCategory(category), getStorefrontVisibility()]);
+        const allProducts = isStorefrontCategoryVisible(category, visibility) ? filterVisibleProducts(categoryProducts, visibility) : [];
         const related = allProducts
           .filter((p) => p.id !== productId)
           .slice(0, limit);
@@ -252,7 +254,8 @@ export const useFilteredProducts = (filters: {
       setLoading(true);
       setError(null);
 
-      let data = await BackendService.getProducts();
+      const [allProducts, visibility] = await Promise.all([BackendService.getProducts(), getStorefrontVisibility()]);
+      let data = filterVisibleProducts(allProducts, visibility);
 
       // Apply filters
       if (filters.category) {

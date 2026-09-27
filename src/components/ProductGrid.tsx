@@ -14,9 +14,10 @@ const categories = [
 interface ProductGridProps {
   onProductClick: (product: Product) => void;
   onViewAll: () => void;
+  showViewAll?: boolean;
 }
 
-export default function ProductGrid({ onProductClick, onViewAll }: ProductGridProps) {
+export default function ProductGrid({ onProductClick, onViewAll, showViewAll = true }: ProductGridProps) {
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const { products, loading } = useProductBySlot("new_release");
   const categories = [...new Set(products.map((product) => product.category))];
@@ -40,12 +41,12 @@ export default function ProductGrid({ onProductClick, onViewAll }: ProductGridPr
               Latest Drops
             </h2>
           </div>
-          <button
+          {showViewAll && <button
             onClick={onViewAll}
             className="flex items-center gap-2 text-xs md:text-sm font-semibold text-[#111] hover:gap-3 transition-all duration-200"
           >
             SEE ALL <ArrowRight size={14} />
-          </button>
+          </button>}
         </div>
 
         {/* Category Filter */}

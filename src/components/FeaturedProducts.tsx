@@ -5,12 +5,6 @@ import ProductCard from "./ProductCard";
 import { Product } from "../types";
 import { useProducts } from "../hooks/useProducts";
 
-const filterCategories = [
-  { label: "All", value: "all" },
-  { label: "Shirts", value: "tops" },
-  { label: "Pants", value: "bottoms" },
-];
-
 interface FeaturedProductsProps {
   onViewAll: () => void;
   onProductClick: (product: Product) => void;
@@ -19,6 +13,13 @@ interface FeaturedProductsProps {
 export default function FeaturedProducts({ onViewAll, onProductClick }: FeaturedProductsProps) {
   const [activeFilter, setActiveFilter] = useState("all");
   const { products } = useProducts();
+  const filterCategories = [
+    { label: "All", value: "all" },
+    ...[...new Set(products.map((product) => product.category))].map((category) => ({
+      label: category === "tops" ? "Shirts" : category === "bottoms" ? "Pants" : category.replace(/[_-]/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase()),
+      value: category,
+    })),
+  ];
 
   const filteredProducts =
     activeFilter === "all"

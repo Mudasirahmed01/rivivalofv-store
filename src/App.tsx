@@ -36,6 +36,7 @@ import SmoothScroll from "./components/SmoothScroll";
 import { Product } from "./types";
 import { getProductSlugFromUrl } from "./lib/shareUtils";
 import BackendService from "./lib/backend";
+import { getStorefrontVisibility, isStorefrontCategoryVisible, StorefrontVisibility } from "./lib/storefrontVisibility";
 
 type StorePage = "home" | "account" | "all-products" | "product-detail" | "checkout" | "wishlist" | "shipping" | "terms" | "privacy" | "contact" | "auth" | "new-releases" | "best-sellers" | "shirts" | "pants";
 
@@ -55,22 +56,36 @@ const getCollectionCategoryFromUrl = () => {
 export default function App() {
   const [currentPage, setCurrentPage] = useState<StorePage>(getPageFromUrl);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [storefrontVisibility, setStorefrontVisibility] = useState<StorefrontVisibility>({ disabledCategories: [], disabledSections: [], disabledPages: [] });
 
   useEffect(() => {
     const syncPageFromUrl = async () => {
+      const visibility = await getStorefrontVisibility();
+      setStorefrontVisibility(visibility);
       const slug = getProductSlugFromUrl();
       if (slug) {
         const product = await BackendService.getProductBySlug(slug);
-        if (product) {
+        if (product && !visibility.disabledPages.includes('product-detail') && isStorefrontCategoryVisible(product.category, visibility)) {
           setSelectedProduct(product);
           setCurrentPage("product-detail");
           window.scrollTo({ top: 0, behavior: "smooth" });
+        } else if (product) {
+          setSelectedProduct(null);
+          setCurrentPage("home");
+          window.history.replaceState(null, "", window.location.pathname + window.location.search);
         }
         return;
       }
 
       setSelectedProduct(null);
-      setCurrentPage(getPageFromUrl());
+      const requestedPage = getPageFromUrl();
+      const pageDisabled = (requestedPage === 'shirts' && !isStorefrontCategoryVisible('tops', visibility))
+        || (requestedPage === 'pants' && !isStorefrontCategoryVisible('bottoms', visibility))
+        || visibility.disabledPages.includes(requestedPage)
+        || (requestedPage === 'new-releases' && visibility.disabledSections.includes('new-releases'))
+        || (requestedPage === 'best-sellers' && visibility.disabledSections.includes('best-sellers'));
+      setCurrentPage(pageDisabled ? 'home' : requestedPage);
+      if (pageDisabled) window.history.replaceState(null, "", window.location.pathname + window.location.search);
     };
 
     syncPageFromUrl();
@@ -83,11 +98,18 @@ export default function App() {
   }, []);
 
   const navigateToPage = (page: StorePage, category?: string) => {
-    const nextUrl = page === "home"
+    const requestedCategory = category?.startsWith('category:') ? category.slice('category:'.length) : category;
+    const pageDisabled = (page === 'shirts' && !isStorefrontCategoryVisible('tops', storefrontVisibility))
+      || (page === 'pants' && !isStorefrontCategoryVisible('bottoms', storefrontVisibility))
+      || storefrontVisibility.disabledPages.includes(page)
+      || (page === 'new-releases' && storefrontVisibility.disabledSections.includes('new-releases'))
+      || (page === 'all-products' && requestedCategory && requestedCategory !== 'perfumes' && !isStorefrontCategoryVisible(requestedCategory, storefrontVisibility));
+    const targetPage = pageDisabled ? 'home' : page;
+    const nextUrl = targetPage === "home"
       ? window.location.pathname + window.location.search
-      : `#page/${page}${category ? `?category=${encodeURIComponent(category)}` : ''}`;
+      : `#page/${targetPage}${category && !pageDisabled ? `?category=${encodeURIComponent(category)}` : ''}`;
     window.history.pushState(null, "", nextUrl);
-    setCurrentPage(page);
+    setCurrentPage(targetPage);
     setSelectedProduct(null);
   };
 
@@ -111,6 +133,7 @@ export default function App() {
   };
 
   const handleProductClick = (product: Product) => {
+    if (storefrontVisibility.disabledPages.includes('product-detail') || !isStorefrontCategoryVisible(product.category, storefrontVisibility)) return;
     window.history.pushState(null, "", `#product/${product.slug}`);
     setSelectedProduct(product);
     setCurrentPage("product-detail");
@@ -131,7 +154,7 @@ export default function App() {
     <ErrorBoundary>
     <SmoothScroll>
     <div className="min-h-screen bg-[#FAFAFA] font-sans antialiased">
-      <Header
+      {!storefrontVisibility.disabledSections.includes('header') && <Header
         onAccountClick={async () => {
           const currentUser = await BackendService.getCurrentUser();
           navigateToPage(currentUser ? "account" : "auth");
@@ -139,30 +162,33 @@ export default function App() {
         }}
         onWishlistClick={handleGoToWishlist}
         onNavigate={handleHomepageCategoryNavigation}
-      />
-      <CartDrawer onCheckout={handleGoToCheckout} />
-      <BackToTop />
-      <ToastContainer />
+        disabledCategories={storefrontVisibility.disabledCategories}
+        disabledSections={storefrontVisibility.disabledSections}
+        disabledPages={storefrontVisibility.disabledPages}
+      />}
+      {!storefrontVisibility.disabledSections.includes('cart-drawer') && <CartDrawer onCheckout={handleGoToCheckout} checkoutDisabled={storefrontVisibility.disabledPages.includes('checkout')} />}
+      {!storefrontVisibility.disabledSections.includes('back-to-top') && <BackToTop />}
+      {!storefrontVisibility.disabledSections.includes('toast-container') && <ToastContainer />}
 
-      {currentPage === "home" && (
+      {currentPage === "home" && !storefrontVisibility.disabledPages.includes('home') && (
         <main>
-          <Hero onExploreCollection={handleViewAllProducts} />
-          <Marquee />
-          <Features />
-          <ScrollRevealText />
-          <ProductGrid onProductClick={handleProductClick} onViewAll={handleViewAllProducts} />
-          <BentoGrid onNavigate={handleHomepageCategoryNavigation} />
-          <BestSellers onProductClick={handleProductClick} />
-          <FeaturedProducts onViewAll={handleViewAllProducts} onProductClick={handleProductClick} />
-          <RecentlyViewed onProductClick={handleProductClick} />
+          {!storefrontVisibility.disabledSections.includes('hero') && <Hero onExploreCollection={handleViewAllProducts} showExploreCollection={!storefrontVisibility.disabledPages.includes('all-products')} />}
+          {!storefrontVisibility.disabledSections.includes('marquee') && <Marquee />}
+          {!storefrontVisibility.disabledSections.includes('features') && <Features />}
+          {!storefrontVisibility.disabledSections.includes('brand-statement') && <ScrollRevealText />}
+          {!storefrontVisibility.disabledSections.includes('new-releases') && <ProductGrid onProductClick={handleProductClick} onViewAll={handleViewAllProducts} showViewAll={!storefrontVisibility.disabledPages.includes('all-products')} />}
+          {!storefrontVisibility.disabledSections.includes('shop-by-category') && <BentoGrid onNavigate={handleHomepageCategoryNavigation} disabledPages={storefrontVisibility.disabledPages} />}
+          {!storefrontVisibility.disabledSections.includes('best-sellers') && <BestSellers onProductClick={handleProductClick} />}
+          {!storefrontVisibility.disabledSections.includes('complete-collection') && !storefrontVisibility.disabledPages.includes('all-products') && <FeaturedProducts onViewAll={handleViewAllProducts} onProductClick={handleProductClick} />}
+          {!storefrontVisibility.disabledSections.includes('recently-viewed') && <RecentlyViewed onProductClick={handleProductClick} />}
         </main>
       )}
 
-      {currentPage === "account" && (
+      {currentPage === "account" && !storefrontVisibility.disabledPages.includes('account') && (
         <AccountPage onBack={handleBackToHome} />
       )}
 
-      {currentPage === "all-products" && (
+      {currentPage === "all-products" && !storefrontVisibility.disabledPages.includes('all-products') && (
         <AllProductsPage initialCategory={getCollectionCategoryFromUrl()} onBack={handleBackToHome} onProductClick={handleProductClick} />
       )}
 
@@ -174,58 +200,58 @@ export default function App() {
         />
       )}
 
-      {currentPage === "checkout" && (
+      {currentPage === "checkout" && !storefrontVisibility.disabledPages.includes('checkout') && (
         <CheckoutPage onBack={handleBackToHome} />
       )}
 
-      {currentPage === "wishlist" && (
+      {currentPage === "wishlist" && !storefrontVisibility.disabledPages.includes('wishlist') && (
         <WishlistPage onBack={handleBackToHome} onProductClick={handleProductClick} />
       )}
 
-      {currentPage === "shipping" && (
+      {currentPage === "shipping" && !storefrontVisibility.disabledPages.includes('shipping') && (
         <ShippingReturns onBack={handleBackToHome} />
       )}
 
-      {currentPage === "terms" && (
+      {currentPage === "terms" && !storefrontVisibility.disabledPages.includes('terms') && (
         <TermsPage onBack={handleBackToHome} />
       )}
 
-      {currentPage === "privacy" && (
+      {currentPage === "privacy" && !storefrontVisibility.disabledPages.includes('privacy') && (
         <PrivacyPage onBack={handleBackToHome} />
       )}
 
-      {currentPage === "contact" && (
+      {currentPage === "contact" && !storefrontVisibility.disabledPages.includes('contact') && (
         <ContactPage onBack={handleBackToHome} />
       )}
 
-      {currentPage === "auth" && (
+      {currentPage === "auth" && !storefrontVisibility.disabledPages.includes('auth') && (
         <AuthPage
           onBack={handleBackToHome}
           onLoginSuccess={() => navigateToPage("account")}
         />
       )}
 
-      {currentPage === "new-releases" && (
+      {currentPage === "new-releases" && !storefrontVisibility.disabledPages.includes('new-releases') && !storefrontVisibility.disabledSections.includes('new-releases') && (
         <NewReleasesPage onBack={handleBackToHome} onProductClick={handleProductClick} />
       )}
 
-      {currentPage === "best-sellers" && (
+      {currentPage === "best-sellers" && !storefrontVisibility.disabledPages.includes('best-sellers') && !storefrontVisibility.disabledSections.includes('best-sellers') && (
         <BestSellersPage onBack={handleBackToHome} onProductClick={handleProductClick} />
       )}
 
-      {currentPage === "shirts" && (
+      {currentPage === "shirts" && !storefrontVisibility.disabledPages.includes('shirts') && isStorefrontCategoryVisible('tops', storefrontVisibility) && (
         <ShirtsPage onBack={handleBackToHome} onProductClick={handleProductClick} />
       )}
 
-      {currentPage === "pants" && (
+      {currentPage === "pants" && !storefrontVisibility.disabledPages.includes('pants') && isStorefrontCategoryVisible('bottoms', storefrontVisibility) && (
         <PantsPage onBack={handleBackToHome} onProductClick={handleProductClick} />
       )}
 
-      <Footer onNavigate={navigateToPage} />
-      <CookieConsent />
-      <ThemeToggle />
-      <LiveChat />
-      <SocialProof />
+      {!storefrontVisibility.disabledSections.includes('footer') && <Footer onNavigate={(page) => navigateToPage(page as StorePage)} disabledPages={storefrontVisibility.disabledPages} disabledCategories={storefrontVisibility.disabledCategories} disabledSections={storefrontVisibility.disabledSections} />}
+      {!storefrontVisibility.disabledSections.includes('cookie-consent') && <CookieConsent />}
+      {!storefrontVisibility.disabledSections.includes('theme-toggle') && <ThemeToggle />}
+      {!storefrontVisibility.disabledSections.includes('live-chat') && <LiveChat />}
+      {!storefrontVisibility.disabledSections.includes('social-proof') && <SocialProof />}
     </div>
     </SmoothScroll>
     </ErrorBoundary>

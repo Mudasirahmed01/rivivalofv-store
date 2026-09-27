@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { motion, useMotionValue, useSpring } from "framer-motion";
 import { useEffect } from "react";
 import BackendService from "../lib/backend";
+import { filterVisibleProducts, getStorefrontVisibility, isStorefrontCategoryVisible } from "../lib/storefrontVisibility";
 
 interface BentoCard {
   id: number | string;
@@ -110,14 +111,25 @@ function BentoCard({ card, index, onNavigate }: BentoCardProps) {
 
 interface BentoGridProps {
   onNavigate?: (page: string) => void;
+  disabledPages?: string[];
 }
 
-export default function BentoGrid({ onNavigate }: BentoGridProps) {
+const noDisabledPages: string[] = [];
+
+export default function BentoGrid({ onNavigate, disabledPages = noDisabledPages }: BentoGridProps) {
   const [bentoCards, setBentoCards] = useState<BentoCard[]>([]);
 
   useEffect(() => {
-    Promise.all([BackendService.getHomepageCategories(), BackendService.getProducts()]).then(([categories, products]) => {
-      const cards: BentoCard[] = categories.map((category) => ({
+    Promise.all([BackendService.getHomepageCategories(), BackendService.getProducts(), getStorefrontVisibility()]).then(([categories, products, visibility]) => {
+      const visibleCategories = categories.filter((category) => {
+        if (category.page.startsWith('category:') && disabledPages.includes('all-products')) return false;
+        if (category.page === 'shirts') return isStorefrontCategoryVisible('tops', visibility);
+        if (category.page === 'pants') return isStorefrontCategoryVisible('bottoms', visibility);
+        if (category.page === 'new-releases') return !visibility.disabledSections.includes('new-releases');
+        if (category.page.startsWith('category:')) return isStorefrontCategoryVisible(category.page.slice('category:'.length), visibility);
+        return true;
+      });
+      const cards: BentoCard[] = visibleCategories.map((category) => ({
         id: category.id,
         title: category.title,
         subtitle: category.subtitle,
@@ -126,7 +138,7 @@ export default function BentoGrid({ onNavigate }: BentoGridProps) {
         span: category.page === 'shirts' ? 'md:row-span-2' : '',
         page: category.page,
       }));
-      const perfume = products.find((product) => product.category.startsWith('perfume') && product.images[0]?.url);
+      const perfume = filterVisibleProducts(products, visibility).find((product) => product.category.startsWith('perfume') && product.images[0]?.url);
       if (perfume && !cards.some((card) => card.page === 'category:perfumes')) {
         cards.push({
           id: 'all-perfumes',
@@ -140,7 +152,7 @@ export default function BentoGrid({ onNavigate }: BentoGridProps) {
       }
       setBentoCards(cards);
     });
-  }, []);
+  }, [disabledPages]);
   const handleNavigate = (page: string) => {
     if (onNavigate) {
       onNavigate(page);

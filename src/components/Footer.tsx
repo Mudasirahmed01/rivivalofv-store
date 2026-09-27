@@ -2,15 +2,18 @@ import { motion } from "framer-motion";
 
 
 interface FooterProps {
-  onNavigate?: (page: "shipping" | "terms" | "privacy" | "contact") => void;
+  onNavigate?: (page: string) => void;
+  disabledPages?: string[];
+  disabledCategories?: string[];
+  disabledSections?: string[];
 }
 
 const footerLinks = {
   shop: [
-    { label: "New Releases", href: "#" },
-    { label: "Best Sellers", href: "#" },
-    { label: "Shirts", href: "#" },
-    { label: "Pants", href: "#" },
+    { label: "New Releases", href: "#", page: "new-releases" },
+    { label: "Best Sellers", href: "#", page: "best-sellers" },
+    { label: "Shirts", href: "#", page: "shirts" },
+    { label: "Pants", href: "#", page: "pants" },
   ],
   support: [
     { label: "Shipping & Returns", href: "#", page: "shipping" as const },
@@ -38,12 +41,19 @@ function FooterLink({ label, href, onClick }: { label: string; href: string; onC
   );
 }
 
-export default function Footer({ onNavigate }: FooterProps) {
-  const handleLinkClick = (e: React.MouseEvent, page: "shipping" | "terms" | "privacy" | "contact") => {
+export default function Footer({ onNavigate, disabledPages = [], disabledCategories = [], disabledSections = [] }: FooterProps) {
+  const handleLinkClick = (e: React.MouseEvent, page: string) => {
     e.preventDefault();
     onNavigate?.(page);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
+  const visibleShopLinks = footerLinks.shop.filter((link) => !disabledPages.includes(link.page)
+    && !(link.page === 'new-releases' && disabledSections.includes('new-releases'))
+    && !(link.page === 'best-sellers' && disabledSections.includes('best-sellers'))
+    && !(link.page === 'shirts' && disabledCategories.includes('tops'))
+    && !(link.page === 'pants' && disabledCategories.includes('bottoms')));
+  const visibleSupportLinks = footerLinks.support.filter((link) => !('page' in link) || !link.page || !disabledPages.includes(link.page));
+  const visibleLegalLinks = footerLinks.legal.filter((link) => !('page' in link) || !link.page || !disabledPages.includes(link.page));
 
   return (
     <footer className="bg-[#0A0A0A] text-white py-12 md:py-16 px-4 md:px-6">
@@ -98,8 +108,8 @@ export default function Footer({ onNavigate }: FooterProps) {
               Shop
             </h4>
             <div className="space-y-0">
-              {footerLinks.shop.map((link) => (
-                <FooterLink key={link.label} label={link.label} href={link.href} />
+              {visibleShopLinks.map((link) => (
+                <FooterLink key={link.label} label={link.label} href={link.href} onClick={(event) => handleLinkClick(event, link.page)} />
               ))}
             </div>
           </div>
@@ -110,7 +120,7 @@ export default function Footer({ onNavigate }: FooterProps) {
               Support
             </h4>
             <div className="space-y-0">
-              {footerLinks.support.map((link) => (
+              {visibleSupportLinks.map((link) => (
                 <FooterLink
                   key={link.label}
                   label={link.label}
@@ -127,7 +137,7 @@ export default function Footer({ onNavigate }: FooterProps) {
               Legal
             </h4>
             <div className="space-y-0 mb-4 md:mb-6">
-              {footerLinks.legal.map((link) => (
+              {visibleLegalLinks.map((link) => (
                 <FooterLink
                   key={link.label}
                   label={link.label}

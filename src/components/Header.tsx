@@ -11,9 +11,12 @@ interface HeaderProps {
   onAccountClick: () => void;
   onWishlistClick: () => void;
   onNavigate?: (page: string) => void;
+  disabledCategories?: string[];
+  disabledSections?: string[];
+  disabledPages?: string[];
 }
 
-export default function Header({ onAccountClick, onWishlistClick, onNavigate }: HeaderProps) {
+export default function Header({ onAccountClick, onWishlistClick, onNavigate, disabledCategories = [], disabledSections = [], disabledPages = [] }: HeaderProps) {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [perfumeMenuOpen, setPerfumeMenuOpen] = useState(false);
@@ -47,17 +50,19 @@ export default function Header({ onAccountClick, onWishlistClick, onNavigate }: 
 
   const navLinks = [
     { label: "HOME", page: "home" },
-    { label: "NEW RELEASES", page: "new-releases" },
+    ...(!disabledSections.includes('new-releases') ? [{ label: "NEW RELEASES", page: "new-releases" }] : []),
     { label: "BEST SELLERS", page: "best-sellers" },
-    { label: "SHIRTS", page: "shirts" },
-    { label: "PANTS", page: "pants" },
-  ];
+    ...(!disabledCategories.includes('tops') ? [{ label: "SHIRTS", page: "shirts" }] : []),
+    ...(!disabledCategories.includes('bottoms') ? [{ label: "PANTS", page: "pants" }] : []),
+  ].filter((link) => !disabledPages.includes(link.page));
   const perfumeLinks = [
     { label: "MEN'S COLLECTION", page: "category:perfume-men" },
     { label: "WOMEN'S COLLECTION", page: "category:perfume-women" },
     { label: "UNISEX COLLECTION", page: "category:perfume-unisex" },
     { label: "ALL PERFUMES", page: "category:perfumes" },
-  ];
+  ].filter((link) => !disabledPages.includes('all-products') && (link.page === 'category:perfumes'
+    ? !['perfume-men', 'perfume-women', 'perfume-unisex'].every((category) => disabledCategories.includes(category))
+    : !disabledCategories.includes(link.page.slice('category:'.length))));
 
   const handleNavClick = (page: string) => {
     setMenuOpen(false);
@@ -111,15 +116,15 @@ export default function Header({ onAccountClick, onWishlistClick, onNavigate }: 
 
           {/* Right: Utility Icons */}
           <div className="flex items-center gap-1 md:gap-3">
-            <button
+            {!disabledSections.includes('search') && <button
               onClick={() => setSearchOpen(true)}
               className="p-2 hover:scale-108 transition-transform duration-200"
               aria-label="Search"
             >
               <Search size={18} className="text-[#111] md:hidden" />
               <Search size={20} className="text-[#111] hidden md:block" />
-            </button>
-            <button
+            </button>}
+            {!disabledPages.includes('wishlist') && <button
               onClick={onWishlistClick}
               className="relative p-2 hover:scale-108 transition-transform duration-200"
               aria-label="Wishlist"
@@ -135,16 +140,16 @@ export default function Header({ onAccountClick, onWishlistClick, onNavigate }: 
                   {wishlistItems.length}
                 </motion.span>
               )}
-            </button>
-            <button
+            </button>}
+            {(!disabledPages.includes('account') || !disabledPages.includes('auth')) && <button
               onClick={onAccountClick}
               className="p-2 hover:scale-108 transition-transform duration-200"
               aria-label="Account"
             >
               <User size={18} className="text-[#111] md:hidden" />
               <User size={20} className="text-[#111] hidden md:block" />
-            </button>
-            <button
+            </button>}
+            {!disabledSections.includes('cart-drawer') && <button
               onClick={toggleCart}
               className="relative p-2 hover:scale-108 transition-transform duration-200"
               aria-label="Cart"
@@ -160,7 +165,7 @@ export default function Header({ onAccountClick, onWishlistClick, onNavigate }: 
                   {totalItems}
                 </motion.span>
               )}
-            </button>
+            </button>}
           </div>
         </div>
       </motion.header>
@@ -294,11 +299,11 @@ export default function Header({ onAccountClick, onWishlistClick, onNavigate }: 
       </AnimatePresence>
 
       {/* Advanced Search Modal */}
-      <AdvancedSearch
+      {!disabledSections.includes('search') && <AdvancedSearch
         isOpen={searchOpen}
         onClose={() => setSearchOpen(false)}
         onProductClick={handleProductClickFromSearch}
-      />
+      />}
 
       {/* Size Guide Modal */}
       <SizeGuide

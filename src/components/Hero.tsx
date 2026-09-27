@@ -4,9 +4,10 @@ import BackendService from "../lib/backend";
 
 interface HeroProps {
   onExploreCollection: () => void;
+  showExploreCollection?: boolean;
 }
 
-export default function Hero({ onExploreCollection }: HeroProps) {
+export default function Hero({ onExploreCollection, showExploreCollection = true }: HeroProps) {
   const [heroSlides, setHeroSlides] = useState<any[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -106,14 +107,14 @@ export default function Hero({ onExploreCollection }: HeroProps) {
             <p className="text-sm md:text-lg text-white/70 mb-6 md:mb-8 max-w-2xl mx-auto px-4">
               {slide.subheadline}
             </p>
-            <motion.button
+            {showExploreCollection && <motion.button
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
               onClick={onExploreCollection}
               className="px-6 md:px-8 py-3 md:py-4 bg-black text-white rounded-full font-semibold text-xs md:text-sm tracking-wider hover:shadow-[0_15px_35px_rgba(0,0,0,0.3)] transition-shadow duration-300"
             >
               {slide.cta}
-            </motion.button>
+            </motion.button>}
           </motion.div>
         </AnimatePresence>
 

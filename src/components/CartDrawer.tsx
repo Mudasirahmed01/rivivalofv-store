@@ -5,9 +5,10 @@ import { formatPKR } from "../lib/currency";
 
 interface CartDrawerProps {
   onCheckout?: () => void;
+  checkoutDisabled?: boolean;
 }
 
-export default function CartDrawer({ onCheckout }: CartDrawerProps) {
+export default function CartDrawer({ onCheckout, checkoutDisabled = false }: CartDrawerProps) {
   const { items, isOpen, closeCart, removeItem, updateQuantity, getTotalPrice } = useCartStore();
   const totalPrice = getTotalPrice();
 
@@ -156,7 +157,7 @@ export default function CartDrawer({ onCheckout }: CartDrawerProps) {
                 </p>
 
                 {/* Checkout Button */}
-                <motion.button
+                {!checkoutDisabled && <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => {
@@ -166,7 +167,7 @@ export default function CartDrawer({ onCheckout }: CartDrawerProps) {
                   className="w-full py-3.5 md:py-4 bg-black text-white rounded-full font-semibold text-xs md:text-sm tracking-wider hover:bg-black/90 transition-colors"
                 >
                   CHECKOUT — {formatPKR(totalPrice)}
-                </motion.button>
+                </motion.button>}
 
                 {/* Continue Shopping */}
                 <button
