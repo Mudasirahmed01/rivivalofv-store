@@ -61,7 +61,11 @@ export default function Header({ onAccountClick, onWishlistClick, onNavigate, di
   useEffect(() => {
     BackendService.getStoreSettings().then((settings) => {
       const activeCategories = (settings.catalog_options?.categories || []).filter((category: { active?: boolean }) => category.active);
-      const savedMobileLogo = settings.mobile_header_logo?.url || settings.mobile_header_logo || settings.header_logo?.url || settings.header_logo || defaultMobileLogo;
+      const savedMobileLogo = settings.mobile_header_logo?.url
+        || (typeof settings.mobile_header_logo === 'string' ? settings.mobile_header_logo : '')
+        || settings.header_logo?.url
+        || (typeof settings.header_logo === 'string' ? settings.header_logo : '')
+        || defaultMobileLogo;
       setMobileHeaderLogo(savedMobileLogo);
       setMenuItems(Array.isArray(settings.storefront_navigation?.items)
         ? settings.storefront_navigation.items
