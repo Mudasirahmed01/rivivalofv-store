@@ -33,15 +33,16 @@ import NewReleasesPage from "./components/NewReleasesPage";
 import BestSellersPage from "./components/BestSellersPage";
 import ShirtsPage from "./components/ShirtsPage";
 import PantsPage from "./components/PantsPage";
+import PerfumesPage from "./components/PerfumesPage";
 import SmoothScroll from "./components/SmoothScroll";
 import { Product } from "./types";
 import { getProductSlugFromUrl } from "./lib/shareUtils";
 import BackendService from "./lib/backend";
 import { getStorefrontVisibility, isStorefrontCategoryVisible, StorefrontVisibility } from "./lib/storefrontVisibility";
 
-type StorePage = "home" | "account" | "all-products" | "product-detail" | "checkout" | "wishlist" | "shipping" | "terms" | "privacy" | "contact" | "auth" | "new-releases" | "best-sellers" | "shirts" | "pants";
+type StorePage = "home" | "account" | "all-products" | "product-detail" | "checkout" | "wishlist" | "shipping" | "terms" | "privacy" | "contact" | "auth" | "new-releases" | "best-sellers" | "shirts" | "pants" | "perfumes";
 
-const storePages: StorePage[] = ["home", "account", "all-products", "checkout", "wishlist", "shipping", "terms", "privacy", "contact", "auth", "new-releases", "best-sellers", "shirts", "pants"];
+const storePages: StorePage[] = ["home", "account", "all-products", "checkout", "wishlist", "shipping", "terms", "privacy", "contact", "auth", "new-releases", "best-sellers", "shirts", "pants", "perfumes"];
 
 const getPageFromUrl = (): StorePage => {
   const match = window.location.hash.match(/^#page\/([^/?]+)/);
@@ -249,7 +250,11 @@ export default function App() {
         <PantsPage onBack={handleBackToHome} onProductClick={handleProductClick} />
       )}
 
-      {!storefrontVisibility.disabledSections.includes('footer') && <Footer onNavigate={(page) => navigateToPage(page as StorePage)} disabledPages={storefrontVisibility.disabledPages} disabledCategories={storefrontVisibility.disabledCategories} disabledSections={storefrontVisibility.disabledSections} />}
+      {currentPage === "perfumes" && !storefrontVisibility.disabledPages.includes('perfumes') && (
+        <PerfumesPage onBack={handleBackToHome} onProductClick={handleProductClick} />
+      )}
+
+      {!storefrontVisibility.disabledSections.includes('footer') && <Footer onNavigate={handleHomepageCategoryNavigation} disabledPages={storefrontVisibility.disabledPages} disabledCategories={storefrontVisibility.disabledCategories} disabledSections={storefrontVisibility.disabledSections} />}
       {!storefrontVisibility.disabledSections.includes('cookie-consent') && <CookieConsent />}
       {!storefrontVisibility.disabledSections.includes('theme-toggle') && <ThemeToggle />}
       {!storefrontVisibility.disabledSections.includes('live-chat') && <LiveChat />}
