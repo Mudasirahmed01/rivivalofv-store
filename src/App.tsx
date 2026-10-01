@@ -59,35 +59,42 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState<StorePage>(getPageFromUrl);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [storefrontVisibility, setStorefrontVisibility] = useState<StorefrontVisibility>({ disabledCategories: [], disabledSections: [], disabledPages: [] });
+  const [visibilityLoaded, setVisibilityLoaded] = useState(false);
 
   useEffect(() => {
     const syncPageFromUrl = async () => {
-      const visibility = await getStorefrontVisibility();
-      setStorefrontVisibility(visibility);
-      const slug = getProductSlugFromUrl();
-      if (slug) {
-        const product = await BackendService.getProductBySlug(slug);
-        if (product && !visibility.disabledPages.includes('product-detail') && isStorefrontCategoryVisible(product.category, visibility)) {
-          setSelectedProduct(product);
-          setCurrentPage("product-detail");
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        } else if (product) {
-          setSelectedProduct(null);
-          setCurrentPage("home");
-          window.history.replaceState(null, "", window.location.pathname + window.location.search);
+      try {
+        const visibility = await getStorefrontVisibility();
+        setStorefrontVisibility(visibility);
+        const slug = getProductSlugFromUrl();
+        if (slug) {
+          const product = await BackendService.getProductBySlug(slug);
+          if (product && !visibility.disabledPages.includes('product-detail') && isStorefrontCategoryVisible(product.category, visibility)) {
+            setSelectedProduct(product);
+            setCurrentPage("product-detail");
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          } else if (product) {
+            setSelectedProduct(null);
+            setCurrentPage("home");
+            window.history.replaceState(null, "", window.location.pathname + window.location.search);
+          }
+          return;
         }
-        return;
-      }
 
-      setSelectedProduct(null);
-      const requestedPage = getPageFromUrl();
-      const pageDisabled = (requestedPage === 'shirts' && !isStorefrontCategoryVisible('tops', visibility))
-        || (requestedPage === 'pants' && !isStorefrontCategoryVisible('bottoms', visibility))
-        || visibility.disabledPages.includes(requestedPage)
-        || (requestedPage === 'new-releases' && visibility.disabledSections.includes('new-releases'))
-        || (requestedPage === 'best-sellers' && visibility.disabledSections.includes('best-sellers'));
-      setCurrentPage(pageDisabled ? 'home' : requestedPage);
-      if (pageDisabled) window.history.replaceState(null, "", window.location.pathname + window.location.search);
+        setSelectedProduct(null);
+        const requestedPage = getPageFromUrl();
+        const pageDisabled = (requestedPage === 'shirts' && !isStorefrontCategoryVisible('tops', visibility))
+          || (requestedPage === 'pants' && !isStorefrontCategoryVisible('bottoms', visibility))
+          || visibility.disabledPages.includes(requestedPage)
+          || (requestedPage === 'new-releases' && visibility.disabledSections.includes('new-releases'))
+          || (requestedPage === 'best-sellers' && visibility.disabledSections.includes('best-sellers'));
+        setCurrentPage(pageDisabled ? 'home' : requestedPage);
+        if (pageDisabled) window.history.replaceState(null, "", window.location.pathname + window.location.search);
+      } catch (error) {
+        console.error('Could not load storefront visibility settings:', error);
+      } finally {
+        setVisibilityLoaded(true);
+      }
     };
 
     syncPageFromUrl();
@@ -151,6 +158,10 @@ export default function App() {
     navigateToPage("wishlist");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
+
+  if (!visibilityLoaded) {
+    return <div className="flex min-h-screen items-center justify-center bg-[#FAFAFA]" aria-busy="true" aria-label="Loading storefront" />;
+  }
 
   return (
     <ErrorBoundary>
