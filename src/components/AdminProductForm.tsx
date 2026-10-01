@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import BackendService from '../lib/backend';
+import ProductDescriptionEditor from './ProductDescriptionEditor';
 import type { Product } from '../types';
 
 interface AdminProductFormProps {
@@ -93,7 +94,7 @@ export default function AdminProductForm({ product, onSaved, onCancel }: AdminPr
         {catalogOptions.placements.filter((placement) => placement.active).map((placement) => <option key={placement.key} value={placement.key}>{placement.label}</option>)}
       </select>
       <input value={form.tags} onChange={(e) => update('tags', e.target.value)} placeholder="Tags: sale, new-arrival, bestseller" className="rounded-xl bg-white p-3 text-sm md:col-span-2" />
-      <textarea value={form.description} onChange={(e) => update('description', e.target.value)} placeholder="Description (optional)" className="min-h-24 rounded-xl bg-white p-3 text-sm md:col-span-2" />
+      <ProductDescriptionEditor value={form.description} onChange={(value) => update('description', value)} />
       <label className="grid gap-2 text-xs font-semibold text-gray-600 md:col-span-2">Desktop / laptop product images<input type="file" accept="image/*" multiple onChange={(e) => setImages(Array.from(e.target.files || []))} className="rounded-xl bg-white p-3 text-sm font-normal" /></label>
       <label className="grid gap-2 text-xs font-semibold text-gray-600 md:col-span-2">Mobile product images (match desktop image order; optional)<input type="file" accept="image/*" multiple onChange={(e) => setMobileImages(Array.from(e.target.files || []))} className="rounded-xl bg-white p-3 text-sm font-normal" /></label>
       {selectedCategory?.requiresSize && <div className="grid gap-2 md:col-span-2">

@@ -5,6 +5,7 @@ import { useCartStore } from "../store/cartStore";
 import { useWishlistStore } from "../store/wishlistStore";
 import { formatPKR } from "../lib/currency";
 import ResponsiveImage from "./ResponsiveImage";
+import ProductDescription from "./ProductDescription";
 import { useState } from "react";
 
 interface QuickViewProps {
@@ -80,7 +81,7 @@ export default function QuickView({ product, isOpen, onClose }: QuickViewProps) 
                   )}
                 </div>
 
-                <p className="text-gray-600 dark:text-gray-400 mb-6">{product.description}</p>
+                <div className="mb-6 text-gray-600 dark:text-gray-400"><ProductDescription content={product.description || ''} /></div>
 
                 {/* Color Selection */}
                 {product.colors && product.colors.length > 0 && (

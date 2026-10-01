@@ -10,6 +10,7 @@ import ResponsiveImage from "./ResponsiveImage";
 import SizeGuide from "./SizeGuide";
 import ShareModal from "./ShareModal";
 import ProductReviews from "./ProductReviews";
+import ProductDescription from "./ProductDescription";
 import ImageZoom from "./ImageZoom";
 import Breadcrumbs from "./Breadcrumbs";
 import { formatPKR } from "../lib/currency";
@@ -191,9 +192,7 @@ export default function ProductDetailPage({ product, onBack, onProductClick }: P
             </div>
 
             {/* Description */}
-            <p className="text-sm md:text-base text-[#6E6E73] leading-relaxed mb-6">
-              {product.description}
-            </p>
+            <div className="mb-6"><ProductDescription content={product.description || ''} /></div>
 
             {/* Color Selector */}
             {product.colors && product.colors.length > 0 && (
