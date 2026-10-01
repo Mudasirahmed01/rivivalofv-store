@@ -122,6 +122,7 @@ export default function BentoGrid({ onNavigate, disabledPages = noDisabledPages 
   useEffect(() => {
     Promise.all([BackendService.getHomepageCategories(), getStorefrontVisibility()]).then(([categories, visibility]) => {
       const visibleCategories = categories.filter((category) => {
+        if (!category.image_url) return false;
         if (category.page.startsWith('category:') && disabledPages.includes('all-products')) return false;
         if (category.page === 'shirts') return isStorefrontCategoryVisible('tops', visibility);
         if (category.page === 'pants') return isStorefrontCategoryVisible('bottoms', visibility);
