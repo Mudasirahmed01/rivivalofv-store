@@ -40,10 +40,12 @@ const formatSaveError = (error: unknown) => {
 export default function AdminContentManager() {
   const [mode, setMode] = useState<ContentMode>('banners');
   const [items, setItems] = useState<any[]>([]);
-  const [productCategories, setProductCategories] = useState<string[]>([]);
+  const [productCategories, setProductCategories] = useState<Array<{ key: string; label: string; active: boolean }>>([]);
+  const [visibilityCategoryKeys, setVisibilityCategoryKeys] = useState<string[]>([]);
   const [form, setForm] = useState<any>(emptyBanner);
   const [editingId, setEditingId] = useState<string | undefined>();
   const [image, setImage] = useState<File>();
+  const [mobileImage, setMobileImage] = useState<File>();
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [settings, setSettings] = useState({ free_shipping_threshold: '', delivery_charge: '', tax_rate: '', marquee_items: '', brand_statement: '' });
@@ -75,7 +77,7 @@ export default function AdminContentManager() {
     }
     if (mode === 'settings') {
       const [storeSettings, products] = await Promise.all([BackendService.getStoreSettings(), BackendService.getProducts()]);
-      setProductCategories([...new Set(products.map((product) => product.category))].sort());
+      setVisibilityCategoryKeys([...new Set(products.map((product) => product.category))].sort());
       const savedCatalogOptions = storeSettings.catalog_options || { categories: [], placements: [] };
       const missingCatalogCategories = [...new Set(products.map((product) => product.category))]
         .filter((key) => !savedCatalogOptions.categories.some((category: any) => category.key === key))
@@ -102,15 +104,20 @@ export default function AdminContentManager() {
     if (mode === 'banners') {
       setItems(await BackendService.getHomepageBanners());
     } else {
-      const [categories, products] = await Promise.all([BackendService.getHomepageCategories(), BackendService.getProducts()]);
+      const [categories, products, storeSettings] = await Promise.all([BackendService.getHomepageCategories(), BackendService.getProducts(), BackendService.getStoreSettings()]);
       setItems(categories);
-      setProductCategories([...new Set(products.map((product) => product.category).filter((category) => !['tops', 'bottoms'].includes(category)))].sort());
+      const savedCategories = storeSettings.catalog_options?.categories || [];
+      const existingKeys = new Set(savedCategories.map((category: { key: string }) => category.key));
+      const legacyCategories = [...new Set(products.map((product) => product.category))]
+        .filter((key) => !existingKeys.has(key))
+        .map((key) => ({ key, label: key.replace(/[_-]/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase()), active: true }));
+      setProductCategories([...savedCategories, ...legacyCategories]);
     }
   };
   useEffect(() => { load(); }, [mode]);
 
-  const startEdit = (item: any) => { setEditingId(item.id); setForm({ ...item }); setImage(undefined); setMessage(''); };
-  const startNew = () => { setEditingId(undefined); setForm(mode === 'banners' ? { ...emptyBanner } : { ...emptyCategory }); setImage(undefined); setMessage(''); };
+  const startEdit = (item: any) => { setEditingId(item.id); setForm({ ...item }); setImage(undefined); setMobileImage(undefined); setMessage(''); };
+  const startNew = () => { setEditingId(undefined); setForm(mode === 'banners' ? { ...emptyBanner } : { ...emptyCategory }); setImage(undefined); setMobileImage(undefined); setMessage(''); };
   const update = (field: string, value: unknown) => setForm((current: any) => ({ ...current, [field]: value }));
 
   const save = async (event: React.FormEvent) => {
@@ -145,11 +152,11 @@ export default function AdminContentManager() {
       return;
     }
     setSaving(true);
-    const saveForm = editingId || image ? form : { ...form, is_active: false };
+    const saveForm = editingId || image || mobileImage ? form : { ...form, is_active: false };
     let saved;
     try {
       saved = mode === 'banners'
-        ? await BackendService.saveHomepageBanner(saveForm, image, editingId)
+        ? await BackendService.saveHomepageBanner(saveForm, image, editingId, mobileImage)
         : await BackendService.saveHomepageCategory(saveForm, image, editingId);
     } catch (error) {
       const detail = formatSaveError(error);
@@ -319,7 +326,7 @@ export default function AdminContentManager() {
         <p className="text-xs text-gray-500">Turn sections off without deleting products or content. You can enable them again anytime.</p>
         <p className="text-xs font-semibold text-gray-600">Product categories</p>
         <div className="grid gap-3 sm:grid-cols-2">
-          {[...new Set(['tops', 'bottoms', ...productCategories])].map((category) => (
+          {[...new Set(['tops', 'bottoms', ...visibilityCategoryKeys])].map((category) => (
             <label key={category} className="flex items-center gap-3 text-sm"><input type="checkbox" checked={visibility.disabledCategories.includes(category)} onChange={(event) => setVisibility((current) => ({ ...current, disabledCategories: event.target.checked ? [...current.disabledCategories, category] : current.disabledCategories.filter((item) => item !== category) }))} /> Hide {category === 'tops' ? 'Shirts' : category === 'bottoms' ? 'Pants' : category.replace(/[_-]/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase())}</label>
           ))}
         </div>
@@ -381,12 +388,14 @@ export default function AdminContentManager() {
         <input value={form.cta || ''} onChange={(e) => update('cta', e.target.value)} placeholder="Button text (optional)" className="rounded-xl bg-[#F5F5F7] p-3 text-sm" />
         <input value={form.headline || ''} onChange={(e) => update('headline', e.target.value)} placeholder="Headline (optional)" className="rounded-xl bg-[#F5F5F7] p-3 text-sm md:col-span-2" />
         <textarea value={form.subheadline || ''} onChange={(e) => update('subheadline', e.target.value)} placeholder="Subheadline (optional)" className="rounded-xl bg-[#F5F5F7] p-3 text-sm md:col-span-2" />
+        <label className="grid gap-2 text-xs font-semibold text-gray-600 md:col-span-2">Desktop / laptop image<input type="file" accept="image/*" onChange={(e) => setImage(e.target.files?.[0])} className="rounded-xl bg-[#F5F5F7] p-3 text-sm font-normal" /></label>
+        <label className="grid gap-2 text-xs font-semibold text-gray-600 md:col-span-2">Mobile image (optional)<input type="file" accept="image/*" onChange={(e) => setMobileImage(e.target.files?.[0])} className="rounded-xl bg-[#F5F5F7] p-3 text-sm font-normal" /></label>
       </> : <>
         <input value={form.title || ''} onChange={(e) => update('title', e.target.value)} placeholder="Category title (optional)" className="rounded-xl bg-[#F5F5F7] p-3 text-sm" />
-        <select value={form.page || 'shirts'} onChange={(e) => update('page', e.target.value)} className="rounded-xl bg-[#F5F5F7] p-3 text-sm"><option value="shirts">Shirts</option><option value="pants">Pants</option><option value="new-releases">New Releases</option>{productCategories.length > 0 && <optgroup label="Product categories">{productCategories.map((category) => <option key={category} value={`category:${category}`}>{category.replace(/[_-]/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase())}</option>)}</optgroup>}</select>
+        <select value={form.page || 'shirts'} onChange={(e) => update('page', e.target.value)} className="rounded-xl bg-[#F5F5F7] p-3 text-sm"><option value="shirts">Shirts</option><option value="pants">Pants</option><option value="new-releases">New Releases</option>{productCategories.length > 0 && <optgroup label="Product categories">{productCategories.filter((category) => category.active).map((category) => <option key={category.key} value={`category:${category.key}`}>{category.label}</option>)}</optgroup>}</select>
         <input value={form.subtitle || ''} onChange={(e) => update('subtitle', e.target.value)} placeholder="Category subtitle (optional)" className="rounded-xl bg-[#F5F5F7] p-3 text-sm md:col-span-2" />
       </>}
-      <input type="file" accept="image/*" onChange={(e) => setImage(e.target.files?.[0])} className="rounded-xl bg-[#F5F5F7] p-3 text-sm md:col-span-2" />
+      {mode !== 'banners' && <input type="file" accept="image/*" onChange={(e) => setImage(e.target.files?.[0])} className="rounded-xl bg-[#F5F5F7] p-3 text-sm md:col-span-2" />}
       <input type="number" value={form.display_order || 0} onChange={(e) => update('display_order', Number(e.target.value))} placeholder="Display order" className="rounded-xl bg-[#F5F5F7] p-3 text-sm" />
       <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={Boolean(form.is_active)} onChange={(e) => update('is_active', e.target.checked)} /> Active</label>
       <div className="flex gap-2 md:col-span-2"><button disabled={saving} className="rounded-full bg-black px-5 py-3 text-sm font-semibold text-white">{saving ? 'Uploading...' : editingId ? 'Update' : 'Create'}</button>{editingId && <button type="button" onClick={startNew} className="rounded-full border border-black/10 px-5 py-3 text-sm">Cancel</button>}</div>

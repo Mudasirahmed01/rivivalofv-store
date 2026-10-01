@@ -23,6 +23,7 @@ export default function Hero({ onExploreCollection, showExploreCollection = true
           subheadline: banner.subheadline || '',
           cta: banner.cta || 'SHOP NOW',
           image: banner.image_url,
+          mobileImage: banner.mobile_image_url || banner.image_url,
         }));
 
       if (liveSlides.length > 0) {
@@ -69,11 +70,10 @@ export default function Hero({ onExploreCollection, showExploreCollection = true
           transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
           className="absolute inset-0"
         >
-          <img
-            src={slide.image}
-            alt={slide.headline}
-            className="w-full h-full object-cover"
-          />
+          <picture className="absolute inset-0 block h-full w-full">
+            <source media="(max-width: 767px)" srcSet={slide.mobileImage || slide.image} />
+            <img src={slide.image} alt={slide.headline || slide.preTitle || 'Store hero banner'} className="h-full w-full object-cover" />
+          </picture>
           <div className="absolute inset-0 bg-linear-to-b from-black/40 via-black/20 to-black/60" />
         </motion.div>
       </AnimatePresence>
