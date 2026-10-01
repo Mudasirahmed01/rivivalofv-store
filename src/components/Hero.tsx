@@ -15,7 +15,7 @@ export default function Hero({ onExploreCollection, showExploreCollection = true
   useEffect(() => {
     BackendService.getHomepageBanners().then((banners) => {
       const liveSlides = banners
-        .filter((banner) => banner.image_url && banner.headline)
+        .filter((banner) => banner.image_url)
         .map((banner) => ({
           id: banner.id,
           preTitle: banner.pre_title || '',
@@ -98,16 +98,10 @@ export default function Hero({ onExploreCollection, showExploreCollection = true
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="max-w-4xl"
           >
-            <p className="text-[10px] md:text-sm text-white/70 tracking-[0.2em] md:tracking-[0.25em] mb-3 md:mb-4 uppercase">
-              {slide.preTitle}
-            </p>
-            <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-extrabold text-white leading-tight mb-4 md:mb-6 px-2">
-              {slide.headline}
-            </h1>
-            <p className="text-sm md:text-lg text-white/70 mb-6 md:mb-8 max-w-2xl mx-auto px-4">
-              {slide.subheadline}
-            </p>
-            {showExploreCollection && <motion.button
+            {slide.preTitle && <p className="text-[10px] md:text-sm text-white/70 tracking-[0.2em] md:tracking-[0.25em] mb-3 md:mb-4 uppercase">{slide.preTitle}</p>}
+            {slide.headline && <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-extrabold text-white leading-tight mb-4 md:mb-6 px-2">{slide.headline}</h1>}
+            {slide.subheadline && <p className="text-sm md:text-lg text-white/70 mb-6 md:mb-8 max-w-2xl mx-auto px-4">{slide.subheadline}</p>}
+            {showExploreCollection && slide.cta && <motion.button
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
               onClick={onExploreCollection}
