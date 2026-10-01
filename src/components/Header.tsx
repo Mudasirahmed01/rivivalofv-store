@@ -26,6 +26,8 @@ interface MenuEntry {
   children: MenuEntry[];
 }
 
+const defaultMobileLogo = 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=200&h=200&fit=crop&crop=center';
+
 const defaultMenu = (categories: Array<{ key: string; label: string }>): MenuEntry[] => [
   { id: 'nav-home', label: 'HOME', destination: 'home', type: 'link', active: true, children: [] },
   { id: 'nav-new-releases', label: 'NEW RELEASES', destination: 'new-releases', type: 'link', active: true, children: [] },
@@ -40,6 +42,7 @@ export default function Header({ onAccountClick, onWishlistClick, onNavigate, di
   const [menuItems, setMenuItems] = useState<MenuEntry[]>([]);
   const [searchOpen, setSearchOpen] = useState(false);
   const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
+  const [mobileHeaderLogo, setMobileHeaderLogo] = useState(defaultMobileLogo);
   const { toggleCart, getTotalItems } = useCartStore();
   const { items: wishlistItems } = useWishlistStore();
   const totalItems = getTotalItems();
@@ -58,6 +61,8 @@ export default function Header({ onAccountClick, onWishlistClick, onNavigate, di
   useEffect(() => {
     BackendService.getStoreSettings().then((settings) => {
       const activeCategories = (settings.catalog_options?.categories || []).filter((category: { active?: boolean }) => category.active);
+      const savedMobileLogo = settings.mobile_header_logo?.url || settings.mobile_header_logo || settings.header_logo?.url || settings.header_logo || defaultMobileLogo;
+      setMobileHeaderLogo(savedMobileLogo);
       setMenuItems(Array.isArray(settings.storefront_navigation?.items)
         ? settings.storefront_navigation.items
         : defaultMenu(activeCategories));
@@ -121,14 +126,15 @@ export default function Header({ onAccountClick, onWishlistClick, onNavigate, di
             {/* Logo - Mobile: Image, Desktop: Text */}
             <a href="/" className="flex items-center">
               {/* Mobile Logo - Image */}
-              <div className="md:hidden h-8 w-8 relative">
-                <img
-                  src="https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=100&h=100&fit=crop&crop=center"
-                  alt="REVIVAL OF V"
-                  className="w-full h-full object-cover rounded-full"
-                />
-                <div className="absolute inset-0 rounded-full border border-black/10" />
-              </div>
+              {mobileHeaderLogo ? (
+                <div className="md:hidden h-8 w-8 overflow-hidden">
+                  <img
+                    src={mobileHeaderLogo}
+                    alt="REVIVAL OF V"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+              ) : null}
 
               {/* Desktop Logo - Text */}
               <span className="hidden md:block text-[#111] font-bold text-lg tracking-[0.15em] hover:opacity-70 transition-opacity">
@@ -207,13 +213,15 @@ export default function Header({ onAccountClick, onWishlistClick, onNavigate, di
               <div className="h-14 md:h-[72px] flex items-center justify-between">
                 {/* Mobile: Image, Desktop: Text */}
                 <div className="flex items-center">
-                  <div className="md:hidden h-8 w-8 relative">
-                    <img
-                      src="https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=100&h=100&fit=crop&crop=center"
-                      alt="REVIVAL OF V"
-                      className="w-full h-full object-cover rounded-full"
-                    />
-                  </div>
+                  {mobileHeaderLogo ? (
+                    <div className="md:hidden h-8 w-8 overflow-hidden">
+                      <img
+                        src={mobileHeaderLogo}
+                        alt="REVIVAL OF V"
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                  ) : null}
                   <span className="hidden md:block text-[#111] font-bold text-lg tracking-[0.15em]">
                     REVIVAL OF V
                   </span>

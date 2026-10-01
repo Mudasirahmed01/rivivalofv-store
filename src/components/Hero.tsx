@@ -78,15 +78,6 @@ export default function Hero({ onExploreCollection, showExploreCollection = true
         </motion.div>
       </AnimatePresence>
 
-      {/* Floating Product Visual */}
-      <motion.div
-        className="absolute inset-0 flex items-center justify-center pointer-events-none"
-        animate={{ y: [0, -12, 0] }}
-        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-      >
-        <div className="w-48 h-48 md:w-80 md:h-80 rounded-full bg-white/5 backdrop-blur-sm border border-white/10" />
-      </motion.div>
-
       {/* Content */}
       <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4 md:px-6">
         <AnimatePresence mode="wait">
