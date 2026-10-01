@@ -21,7 +21,7 @@ export default function Hero({ onExploreCollection, showExploreCollection = true
           preTitle: banner.pre_title || '',
           headline: banner.headline,
           subheadline: banner.subheadline || '',
-          cta: banner.cta || 'SHOP NOW',
+          cta: banner.cta || '',
           image: banner.image_url,
           mobileImage: banner.mobile_image_url || banner.image_url,
         }));

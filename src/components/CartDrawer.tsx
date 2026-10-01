@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Minus, Plus, ShoppingBag } from "lucide-react";
 import { useCartStore } from "../store/cartStore";
 import { formatPKR } from "../lib/currency";
+import ResponsiveImage from "./ResponsiveImage";
 
 interface CartDrawerProps {
   onCheckout?: () => void;
@@ -78,8 +79,9 @@ export default function CartDrawer({ onCheckout, checkoutDisabled = false }: Car
                     >
                       {/* Product Image */}
                       <div className="w-16 h-20 md:w-20 md:h-24 rounded-lg overflow-hidden bg-white shrink-0">
-                        <img
+                        <ResponsiveImage
                           src={item.product.images[0]?.url}
+                          mobileSrc={item.product.images[0]?.mobileUrl}
                           alt={item.product.title}
                           className="w-full h-full object-cover"
                         />

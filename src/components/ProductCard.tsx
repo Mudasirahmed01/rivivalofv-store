@@ -9,6 +9,7 @@ import { Plus, Share2, Heart } from "lucide-react";
 import ShareModal from "./ShareModal";
 import RatingStars from "./RatingStars";
 import { formatPKR } from "../lib/currency";
+import ResponsiveImage from "./ResponsiveImage";
 
 interface ProductCardProps {
   product: Product;
@@ -75,13 +76,18 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
       {/* Image - Full Bleed, No Border Radius */}
       <div className="relative aspect-[3/4] overflow-hidden bg-[#ECECEC]">
         {primaryImage ? (
-          <motion.img
-            src={isHovered && secondaryImage ? secondaryImage.url : primaryImage.url}
-            alt={primaryImage.altText || product.title}
-            className="w-full h-full object-cover"
+          <motion.div
+            className="h-full w-full"
             animate={{ scale: isHovered ? 1.06 : 1 }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          />
+          >
+            <ResponsiveImage
+              src={isHovered && secondaryImage ? secondaryImage.url : primaryImage.url}
+              mobileSrc={isHovered && secondaryImage ? secondaryImage.mobileUrl : primaryImage.mobileUrl}
+              alt={(isHovered && secondaryImage ? secondaryImage.altText : primaryImage.altText) || product.title}
+              className="h-full w-full object-cover"
+            />
+          </motion.div>
         ) : (
           <div className="flex h-full items-center justify-center px-6 text-center text-sm font-semibold text-[#6E6E73]">
             Image coming soon

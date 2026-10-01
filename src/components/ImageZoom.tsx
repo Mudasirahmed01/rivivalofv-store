@@ -4,12 +4,13 @@ import { X } from "lucide-react";
 
 interface ImageZoomProps {
   src: string;
+  mobileSrc?: string;
   alt: string;
   isOpen: boolean;
   onClose: () => void;
 }
 
-export default function ImageZoom({ src, alt, isOpen, onClose }: ImageZoomProps) {
+export default function ImageZoom({ src, mobileSrc, alt, isOpen, onClose }: ImageZoomProps) {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [scale, setScale] = useState(1);
 
@@ -44,17 +45,20 @@ export default function ImageZoom({ src, alt, isOpen, onClose }: ImageZoomProps)
             <X size={24} className="text-white" />
           </button>
 
-          <motion.img
-            src={src}
-            alt={alt}
-            className="max-w-[90vw] max-h-[90vh] object-contain"
-            animate={{
+          <picture>
+            {mobileSrc && <source srcSet={mobileSrc} media="(max-width: 767px)" />}
+            <motion.img
+              src={src}
+              alt={alt}
+              className="max-w-[90vw] max-h-[90vh] object-contain"
+              animate={{
               x: position.x,
               y: position.y,
-              scale: scale,
-            }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          />
+                scale: scale,
+              }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            />
+          </picture>
 
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/50 text-xs">
             Scroll to zoom • Click to close

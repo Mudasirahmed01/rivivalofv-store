@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { motion, useMotionValue, useSpring } from "framer-motion";
 import { useEffect } from "react";
 import BackendService from "../lib/backend";
+import ResponsiveImage from "./ResponsiveImage";
 import { getStorefrontVisibility, isStorefrontCategoryVisible } from "../lib/storefrontVisibility";
 
 interface BentoCard {
@@ -9,6 +10,7 @@ interface BentoCard {
   title: string;
   subtitle: string;
   image: string;
+  mobileImage?: string;
   height: string;
   span: string;
   page: string;
@@ -71,8 +73,9 @@ function BentoCard({ card, index, onNavigate }: BentoCardProps) {
       onClick={handleClick}
       className={`relative rounded-2xl overflow-hidden cursor-pointer group ${card.height} ${card.span}`}
     >
-      <img
+      <ResponsiveImage
         src={card.image}
+        mobileSrc={card.mobileImage}
         alt={card.title}
         className="w-full h-full object-cover transition-transform duration-700"
         style={{ transform: isHovered ? "scale(1.05)" : "scale(1)" }}
@@ -135,6 +138,7 @@ export default function BentoGrid({ onNavigate, disabledPages = noDisabledPages 
         title: category.title,
         subtitle: category.subtitle,
         image: category.image_url,
+        mobileImage: category.mobile_image_url || undefined,
         height: category.page === 'shirts' ? 'h-[400px] md:h-[580px]' : 'h-[280px] md:h-[280px]',
         span: category.page === 'shirts' ? 'md:row-span-2' : '',
         page: category.page,

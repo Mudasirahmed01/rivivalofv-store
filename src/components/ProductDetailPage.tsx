@@ -6,6 +6,7 @@ import { useCartStore } from "../store/cartStore";
 import { useRecentlyViewedStore } from "../store/recentlyViewedStore";
 import { useToastStore } from "../store/toastStore";
 import ProductCard from "./ProductCard";
+import ResponsiveImage from "./ResponsiveImage";
 import SizeGuide from "./SizeGuide";
 import ShareModal from "./ShareModal";
 import ProductReviews from "./ProductReviews";
@@ -96,15 +97,20 @@ export default function ProductDetailPage({ product, onBack, onProductClick }: P
               className="relative aspect-[3/4] bg-[#ECECEC] overflow-hidden mb-4 cursor-zoom-in"
               onClick={() => setZoomOpen(true)}
             >
-              <motion.img
+              <motion.div
                 key={selectedImage}
-                src={product.images[selectedImage]?.url}
-                alt={product.images[selectedImage]?.altText}
-                className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                className="h-full w-full"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.4 }}
-              />
+              >
+                <ResponsiveImage
+                  src={product.images[selectedImage]?.url}
+                  mobileSrc={product.images[selectedImage]?.mobileUrl}
+                  alt={product.images[selectedImage]?.altText || product.title}
+                  className="h-full w-full object-cover hover:scale-105 transition-transform duration-500"
+                />
+              </motion.div>
               
               {/* Sale Badge */}
               {product.compareAtPrice && (
@@ -139,8 +145,9 @@ export default function ProductDetailPage({ product, onBack, onProductClick }: P
                       : "opacity-60 hover:opacity-100"
                   }`}
                 >
-                  <img
+                  <ResponsiveImage
                     src={image.url}
+                    mobileSrc={image.mobileUrl}
                     alt={image.altText}
                     className="w-full h-full object-cover"
                   />
@@ -377,7 +384,8 @@ export default function ProductDetailPage({ product, onBack, onProductClick }: P
       {/* Image Zoom */}
       <ImageZoom
         src={product.images[selectedImage]?.url}
-        alt={product.images[selectedImage]?.altText}
+        mobileSrc={product.images[selectedImage]?.mobileUrl}
+        alt={product.images[selectedImage]?.altText || product.title}
         isOpen={zoomOpen}
         onClose={() => setZoomOpen(false)}
       />

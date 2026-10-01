@@ -9,6 +9,7 @@ import { Product, Order } from '../types';
 import { formatPKR } from '../lib/currency';
 import AdminProductForm from './AdminProductForm';
 import AdminContentManager from './AdminContentManager';
+import ResponsiveImage from './ResponsiveImage';
 
 interface AdminDashboardProps {
   onBack: () => void;
@@ -234,8 +235,9 @@ export default function AdminDashboard({ onBack }: AdminDashboardProps) {
                     <tr key={product.id} className="border-b border-black/5 hover:bg-[#F5F5F7] transition-colors">
                       <td className="py-4">
                         <div className="flex items-center gap-3">
-                          <img
+                          <ResponsiveImage
                             src={product.images[0]?.url}
+                            mobileSrc={product.images[0]?.mobileUrl}
                             alt={product.title}
                             className="w-12 h-12 rounded-lg object-cover"
                           />

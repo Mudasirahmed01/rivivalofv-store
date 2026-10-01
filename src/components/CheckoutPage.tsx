@@ -7,6 +7,7 @@ import { formatPKR } from "../lib/currency";
 import EmailConfirmation from "./EmailConfirmation";
 import CouponInput from "./CouponInput";
 import BackendService from "../lib/backend";
+import ResponsiveImage from "./ResponsiveImage";
 
 interface CheckoutPageProps {
   onBack: () => void;
@@ -476,8 +477,9 @@ export default function CheckoutPage({ onBack }: CheckoutPageProps) {
                 {items.map((item) => (
                   <div key={`${item.product.id}-${item.selectedSize}`} className="flex gap-3">
                     <div className="relative w-14 h-18 rounded-lg overflow-hidden bg-[#F5F5F7] shrink-0">
-                      <img
+                      <ResponsiveImage
                         src={item.product.images[0]?.url}
+                        mobileSrc={item.product.images[0]?.mobileUrl}
                         alt={item.product.title}
                         className="w-full h-full object-cover"
                       />

@@ -4,6 +4,7 @@ import { Product } from "../types";
 import { useCartStore } from "../store/cartStore";
 import { useWishlistStore } from "../store/wishlistStore";
 import { formatPKR } from "../lib/currency";
+import ResponsiveImage from "./ResponsiveImage";
 import { useState } from "react";
 
 interface QuickViewProps {
@@ -59,8 +60,9 @@ export default function QuickView({ product, isOpen, onClose }: QuickViewProps) 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6">
               {/* Product Image */}
               <div className="aspect-square bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
-                <img
+                <ResponsiveImage
                   src={product.images[0]?.url}
+                  mobileSrc={product.images[0]?.mobileUrl}
                   alt={product.title}
                   className="w-full h-full object-cover"
                 />

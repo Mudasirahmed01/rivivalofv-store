@@ -6,6 +6,7 @@ import { formatPKR } from "../lib/currency";
 import RatingStars from "./RatingStars";
 import { useReviewsStore } from "../store/reviewsStore";
 import { useProducts } from "../hooks/useProducts";
+import ResponsiveImage from "./ResponsiveImage";
 
 interface AdvancedSearchProps {
   isOpen: boolean;
@@ -214,8 +215,9 @@ export default function AdvancedSearch({ isOpen, onClose, onProductClick }: Adva
                         className="w-full flex items-center gap-4 p-3 rounded-xl hover:bg-[#F5F5F7] transition-colors text-left"
                       >
                         <div className="w-14 h-14 rounded-lg overflow-hidden bg-[#ECECEC] shrink-0">
-                          <img
+                          <ResponsiveImage
                             src={product.images[0]?.url}
+                            mobileSrc={product.images[0]?.mobileUrl}
                             alt={product.title}
                             className="w-full h-full object-cover"
                           />
