@@ -526,7 +526,14 @@ class BackendService {
       console.error('Newsletter signup failed:', error);
       return { success: false, message: error.message };
     }
-    return { success: true, message: 'You are subscribed to email updates.' };
+    const { error: emailError } = await supabase.functions.invoke('newsletter-welcome', {
+      body: { email: normalizedEmail },
+    });
+    if (emailError) {
+      console.warn('Newsletter consent saved, but welcome email was not sent:', emailError.message);
+      return { success: true, message: 'You are subscribed, but the welcome email could not be delivered right now.' };
+    }
+    return { success: true, message: 'You are subscribed. Check your inbox for a welcome email.' };
   }
 
   static async getUserAddresses(userId?: string): Promise<any[]> {
@@ -625,6 +632,16 @@ class BackendService {
     return { success: true, message: 'Login successful', user: data.user };
   }
 
+  static async requestPasswordReset(email: string, redirectTo: string): Promise<{ success: boolean; message: string }> {
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), { redirectTo });
+    return error ? { success: false, message: error.message } : { success: true, message: 'Reset email requested.' };
+  }
+
+  static async updatePassword(password: string): Promise<{ success: boolean; message: string }> {
+    const { error } = await supabase.auth.updateUser({ password });
+    return error ? { success: false, message: error.message } : { success: true, message: 'Password updated.' };
+  }
+
   /**
    * Logout user
    */
@@ -651,6 +668,7 @@ class BackendService {
   static async createOrder(orderData: OrderData): Promise<{
     success: boolean;
     message: string;
+    emailSent?: boolean;
     order?: any
   }> {
     const user = await this.getCurrentUser();
@@ -695,10 +713,10 @@ class BackendService {
 
     console.log('✅ Order created successfully');
     const { error: notificationError } = await supabase.functions.invoke('order-confirmation', {
-      body: { email: newOrder.customer_email, order: newOrder },
+      body: { email: newOrder.customer_email, orderId: newOrder.id },
     });
     if (notificationError) console.warn('Order saved, but confirmation email was not sent:', notificationError.message);
-    return { success: true, message: 'Order placed successfully', order: newOrder };
+    return { success: true, message: 'Order placed successfully', emailSent: !notificationError, order: newOrder };
   }
 
   /**

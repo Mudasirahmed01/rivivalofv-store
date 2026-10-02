@@ -22,6 +22,7 @@ export default function CheckoutPage({ onBack }: CheckoutPageProps) {
   const [orderTotal, setOrderTotal] = useState(0);
   const [orderItems, setOrderItems] = useState<typeof items>([]);
   const [orderNumber, setOrderNumber] = useState<string | null>(null);
+  const [confirmationEmailSent, setConfirmationEmailSent] = useState(false);
   const [orderError, setOrderError] = useState("");
   const [placingOrder, setPlacingOrder] = useState(false);
   const [storeSettings, setStoreSettings] = useState<any | null>(null);
@@ -95,6 +96,7 @@ export default function CheckoutPage({ onBack }: CheckoutPageProps) {
     setOrderTotal(total);
     setOrderItems([...items]);
     setOrderNumber(result.order?.id || null);
+    setConfirmationEmailSent(Boolean(result.emailSent));
     clearCart();
     setStep("success");
   };
@@ -145,7 +147,7 @@ export default function CheckoutPage({ onBack }: CheckoutPageProps) {
             Thank you for your purchase. Your order has been placed successfully.
           </p>
           <p className="text-xs text-[#6E6E73] mb-8">
-            Order #{orderNumber || "submitted"} • Confirmation sent to {formData.email || "your email"}
+            Order #{orderNumber || "submitted"} • {confirmationEmailSent ? `Confirmation sent to ${formData.email}` : 'Your order is saved, but the confirmation email could not be delivered.'}
           </p>
           <div className="p-4 bg-white rounded-xl border border-black/5 mb-6 text-left">
             <p className="text-xs text-[#6E6E73] mb-1">Total Amount</p>

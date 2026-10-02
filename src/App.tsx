@@ -34,17 +34,19 @@ import BestSellersPage from "./components/BestSellersPage";
 import ShirtsPage from "./components/ShirtsPage";
 import PantsPage from "./components/PantsPage";
 import PerfumesPage from "./components/PerfumesPage";
+import ResetPasswordPage from "./components/ResetPasswordPage";
 import SmoothScroll from "./components/SmoothScroll";
 import { Product } from "./types";
 import { getProductSlugFromUrl } from "./lib/shareUtils";
 import BackendService from "./lib/backend";
 import { getStorefrontVisibility, isStorefrontCategoryVisible, StorefrontVisibility } from "./lib/storefrontVisibility";
 
-type StorePage = "home" | "account" | "all-products" | "product-detail" | "checkout" | "wishlist" | "shipping" | "terms" | "privacy" | "contact" | "auth" | "new-releases" | "best-sellers" | "shirts" | "pants" | "perfumes";
+type StorePage = "home" | "account" | "all-products" | "product-detail" | "checkout" | "wishlist" | "shipping" | "terms" | "privacy" | "contact" | "auth" | "reset-password" | "new-releases" | "best-sellers" | "shirts" | "pants" | "perfumes";
 
-const storePages: StorePage[] = ["home", "account", "all-products", "checkout", "wishlist", "shipping", "terms", "privacy", "contact", "auth", "new-releases", "best-sellers", "shirts", "pants", "perfumes"];
+const storePages: StorePage[] = ["home", "account", "all-products", "checkout", "wishlist", "shipping", "terms", "privacy", "contact", "auth", "reset-password", "new-releases", "best-sellers", "shirts", "pants", "perfumes"];
 
 const getPageFromUrl = (): StorePage => {
+  if (new URLSearchParams(window.location.search).get('auth') === 'reset-password') return 'reset-password';
   const match = window.location.hash.match(/^#page\/([^/?]+)/);
   const page = match?.[1] as StorePage | undefined;
   return page && storePages.includes(page) ? page : "home";
@@ -243,6 +245,13 @@ export default function App() {
           onBack={handleBackToHome}
           onLoginSuccess={() => navigateToPage("account")}
         />
+      )}
+
+      {currentPage === "reset-password" && (
+        <ResetPasswordPage onBackToSignIn={() => {
+          window.history.replaceState(null, '', `${window.location.pathname}${window.location.search.replace(/([?&])auth=reset-password(?:&|$)/, '$1').replace(/[?&]$/, '')}#page/auth`);
+          setCurrentPage('auth');
+        }} />
       )}
 
       {currentPage === "new-releases" && !storefrontVisibility.disabledPages.includes('new-releases') && !storefrontVisibility.disabledSections.includes('new-releases') && (

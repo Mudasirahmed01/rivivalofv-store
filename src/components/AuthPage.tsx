@@ -10,6 +10,7 @@ interface AuthPageProps {
 
 export default function AuthPage({ onBack, onLoginSuccess }: AuthPageProps) {
   const [isLogin, setIsLogin] = useState(true);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -33,7 +34,11 @@ export default function AuthPage({ onBack, onLoginSuccess }: AuthPageProps) {
     setNotice('');
     setLoading(true);
 
-    if (isLogin) {
+    if (isForgotPassword) {
+      const result = await BackendService.requestPasswordReset(formData.email, `${window.location.origin}${window.location.pathname}?auth=reset-password`);
+      if (result.success) setNotice('If an account exists for that email, a password reset link has been sent.');
+      else setError(result.message);
+    } else if (isLogin) {
       const result = await BackendService.loginUser(formData.email, formData.password);
       if (result.success) {
         onLoginSuccess();
@@ -75,10 +80,10 @@ export default function AuthPage({ onBack, onLoginSuccess }: AuthPageProps) {
         >
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-[#111] mb-2">
-              {isLogin ? authCopy.login_title : authCopy.signup_title}
+              {isForgotPassword ? 'Reset your password' : isLogin ? authCopy.login_title : authCopy.signup_title}
             </h1>
             <p className="text-sm text-gray-600">
-              {isLogin ? authCopy.login_tagline : authCopy.signup_tagline}
+              {isForgotPassword ? 'Enter your email and we will send a secure reset link.' : isLogin ? authCopy.login_tagline : authCopy.signup_tagline}
             </p>
           </div>
 
@@ -95,7 +100,7 @@ export default function AuthPage({ onBack, onLoginSuccess }: AuthPageProps) {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {!isLogin && (
+            {!isLogin && !isForgotPassword && (
               <>
                 <div>
                   <label className="block text-xs font-bold text-[#111] uppercase tracking-wider mb-2">
@@ -149,7 +154,7 @@ export default function AuthPage({ onBack, onLoginSuccess }: AuthPageProps) {
               </div>
             </div>
 
-            <div>
+            {!isForgotPassword && <div>
               <label className="block text-xs font-bold text-[#111] uppercase tracking-wider mb-2">
                 Password
               </label>
@@ -165,7 +170,7 @@ export default function AuthPage({ onBack, onLoginSuccess }: AuthPageProps) {
                   minLength={6}
                 />
               </div>
-            </div>
+            </div>}
 
             <motion.button
               whileHover={{ scale: 1.02 }}
@@ -174,11 +179,11 @@ export default function AuthPage({ onBack, onLoginSuccess }: AuthPageProps) {
               disabled={loading}
               className="w-full py-4 bg-black text-white rounded-full font-semibold text-sm tracking-wider hover:bg-black/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Please wait...' : isLogin ? 'SIGN IN' : 'CREATE ACCOUNT'}
+              {loading ? 'Please wait...' : isForgotPassword ? 'SEND RESET LINK' : isLogin ? 'SIGN IN' : 'CREATE ACCOUNT'}
             </motion.button>
           </form>
 
-          <div className="mt-6 text-center">
+          {!isForgotPassword && <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
               {isLogin ? "Don't have an account?" : 'Already have an account?'}{' '}
               <button
@@ -192,15 +197,16 @@ export default function AuthPage({ onBack, onLoginSuccess }: AuthPageProps) {
                 {isLogin ? 'Sign Up' : 'Sign In'}
               </button>
             </p>
-          </div>
+          </div>}
 
-          {isLogin && (
+          {isLogin && !isForgotPassword && (
             <div className="mt-4 text-center">
-              <button className="text-xs text-gray-500 hover:text-black transition-colors">
+              <button type="button" onClick={() => { setIsForgotPassword(true); setError(''); setNotice(''); }} className="text-xs text-gray-500 hover:text-black transition-colors">
                 Forgot password?
               </button>
             </div>
           )}
+          {isForgotPassword && <div className="mt-4 text-center"><button type="button" onClick={() => { setIsForgotPassword(false); setError(''); setNotice(''); }} className="text-sm font-semibold text-black hover:underline">Back to sign in</button></div>}
         </motion.div>
       </div>
     </div>
