@@ -10,7 +10,7 @@ interface AdminProductFormProps {
 }
 
 export default function AdminProductForm({ product, onSaved, onCancel }: AdminProductFormProps) {
-  const [catalogOptions, setCatalogOptions] = useState<{ categories: Array<{ key: string; label: string; requiresSize: boolean; active: boolean }>; placements: Array<{ key: string; label: string; active: boolean }> }>({ categories: [], placements: [] });
+  const [catalogOptions, setCatalogOptions] = useState<{ categories: Array<{ key: string; label: string; requiresSize: boolean; subcategories?: Array<{ key: string; label: string }>; active: boolean }>; placements: Array<{ key: string; label: string; active: boolean }> }>({ categories: [], placements: [] });
   const [form, setForm] = useState({
     title: product?.title || '',
     slug: product?.slug || '',
@@ -19,6 +19,7 @@ export default function AdminProductForm({ product, onSaved, onCancel }: AdminPr
     description: product?.description || '',
     fabricDetails: product?.fabricDetails || '',
     category: product?.category || '',
+    subcategory: product?.subcategory || '',
     homepageSlot: product?.homepageSlot || '',
     isPublished: product?.isPublished ?? true,
     tags: product?.tags?.join(', ') || '',
@@ -28,25 +29,44 @@ export default function AdminProductForm({ product, onSaved, onCancel }: AdminPr
   const [variants, setVariants] = useState(product?.variants?.map((variant) => ({ size: variant.size, stockCount: variant.stockCount, sku: variant.sku })) || [{ size: 'S', stockCount: 0, sku: '' }, { size: 'M', stockCount: 0, sku: '' }, { size: 'L', stockCount: 0, sku: '' }, { size: 'XL', stockCount: 0, sku: '' }]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [newSubcategoryLabel, setNewSubcategoryLabel] = useState('');
 
   useEffect(() => {
     Promise.all([BackendService.getStoreSettings(), BackendService.getProducts()]).then(([settings, products]) => {
       const options = settings.catalog_options || { categories: [], placements: [] };
-      const categories = Array.isArray(options.categories) ? options.categories : [];
+      const categories = (Array.isArray(options.categories) ? options.categories : []).map((category: any) => ({
+        ...category,
+        subcategories: Array.isArray(category.subcategories) ? category.subcategories : [],
+      }));
       const missingCategories = [...new Set(products.map((item) => item.category))]
         .filter((key) => !categories.some((category: any) => category.key === key))
-        .map((key) => ({ key, label: key.replace(/[_-]/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase()), requiresSize: products.some((item) => item.category === key && item.variants.length > 0), active: true }));
+        .map((key) => ({ key, label: key.replace(/[_-]/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase()), requiresSize: products.some((item) => item.category === key && item.variants.length > 0), subcategories: [], active: true }));
       options.categories = [...categories, ...missingCategories];
       if (product?.category && !options.categories.some((category: any) => category.key === product.category)) {
-        options.categories = [...options.categories, { key: product.category, label: product.category, requiresSize: product.variants.length > 0, active: true }];
+        options.categories = [...options.categories, { key: product.category, label: product.category, requiresSize: product.variants.length > 0, subcategories: [], active: true }];
       }
       setCatalogOptions(options);
     });
   }, [product?.category]);
 
   const selectedCategory = catalogOptions.categories.find((category) => category.key === form.category);
+  const selectedSubcategories = selectedCategory?.subcategories || [];
 
   const update = (field: string, value: string | boolean) => setForm((current) => ({ ...current, [field]: value }));
+
+  const addSubcategory = () => {
+    const label = newSubcategoryLabel.trim();
+    const key = label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    if (!selectedCategory || !key || selectedSubcategories.some((subcategory) => subcategory.key === key)) return;
+    setCatalogOptions((current) => ({
+      ...current,
+      categories: current.categories.map((category) => category.key === selectedCategory.key
+        ? { ...category, subcategories: [...(category.subcategories || []), { key, label }] }
+        : category),
+    }));
+    update('subcategory', key);
+    setNewSubcategoryLabel('');
+  };
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -66,8 +86,20 @@ export default function AdminProductForm({ product, onSaved, onCancel }: AdminPr
       compareAtPrice: form.compareAtPrice ? Number(form.compareAtPrice) : undefined,
       tags: form.tags.split(',').map((tag) => tag.trim()).filter(Boolean),
       category: productCategory,
+      subcategory: selectedCategory?.subcategories?.some((subcategory) => subcategory.key === form.subcategory) ? form.subcategory : '',
       homepageSlot: form.homepageSlot || 'none',
     };
+    if (newSubcategoryLabel.trim()) {
+      setSaving(false);
+      setError('Click Add beside the subcategory field before saving the product.');
+      return;
+    }
+    const catalogSaved = await BackendService.saveStoreSetting('catalog_options', catalogOptions);
+    if (!catalogSaved) {
+      setSaving(false);
+      setError('Could not save subcategory settings. Check admin access to store_settings, then retry.');
+      return;
+    }
     const productVariants = productCategoryOption?.requiresSize ? variants.filter((variant) => variant.size.trim()) : [];
     const saved = await BackendService.saveProduct(payload, images, productVariants, product?.id, mobileImages);
     setSaving(false);
@@ -86,10 +118,20 @@ export default function AdminProductForm({ product, onSaved, onCancel }: AdminPr
       <input type="number" min="0" value={form.price} onChange={(e) => update('price', e.target.value)} placeholder="Price (defaults to 0)" className="rounded-xl bg-white p-3 text-sm" />
       <input type="number" min="0" value={form.compareAtPrice} onChange={(e) => update('compareAtPrice', e.target.value)} placeholder="Sale compare price (optional)" className="rounded-xl bg-white p-3 text-sm" />
       <input value={form.fabricDetails} onChange={(e) => update('fabricDetails', e.target.value)} placeholder="Fabric details" className="rounded-xl bg-white p-3 text-sm" />
-      <select value={form.category} onChange={(e) => update('category', e.target.value)} className="rounded-xl bg-white p-3 text-sm">
+      <select value={form.category} onChange={(e) => { update('category', e.target.value); update('subcategory', ''); }} className="rounded-xl bg-white p-3 text-sm">
         <option value="">Use default category</option>
         {catalogOptions.categories.filter((category) => category.active).map((category) => <option key={category.key} value={category.key}>{category.label}</option>)}
       </select>
+      <div className="grid gap-2 sm:grid-cols-[1fr_auto] md:col-span-2">
+        <select value={form.subcategory} onChange={(e) => update('subcategory', e.target.value)} disabled={!selectedCategory} aria-label="Product subcategory" className="rounded-xl bg-white p-3 text-sm disabled:cursor-not-allowed disabled:opacity-60">
+          <option value="">{selectedCategory ? 'No subcategory (optional)' : 'Choose a category first'}</option>
+          {selectedSubcategories.map((subcategory) => <option key={subcategory.key} value={subcategory.key}>{subcategory.label}</option>)}
+        </select>
+        <div className="flex gap-2">
+          <input value={newSubcategoryLabel} onChange={(event) => setNewSubcategoryLabel(event.target.value)} disabled={!selectedCategory} placeholder="New subcategory, e.g. Women, Men, Unisex" className="min-w-0 flex-1 rounded-xl bg-white p-3 text-sm disabled:opacity-60" />
+          <button type="button" onClick={addSubcategory} disabled={!selectedCategory || !newSubcategoryLabel.trim()} className="rounded-xl border border-black/10 bg-white px-4 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50">Add</button>
+        </div>
+      </div>
       <select value={form.homepageSlot} onChange={(e) => update('homepageSlot', e.target.value)} className="rounded-xl bg-white p-3 text-sm">
         {catalogOptions.placements.filter((placement) => placement.active).map((placement) => <option key={placement.key} value={placement.key}>{placement.label}</option>)}
       </select>

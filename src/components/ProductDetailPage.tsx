@@ -165,9 +165,10 @@ export default function ProductDetailPage({ product, onBack, onProductClick }: P
             className="flex flex-col"
           >
             {/* Category */}
-            <p className="text-[10px] md:text-xs text-[#6E6E73] uppercase tracking-wider mb-2">
-              {product.category}
-            </p>
+            <div className="mb-2 flex flex-wrap items-center gap-2 text-[10px] md:text-xs uppercase tracking-wider">
+              <p className="text-[#6E6E73]">{product.category}</p>
+              {product.subcategory && <span className="border-l border-black/20 pl-2 font-semibold text-[#111]">{product.subcategory.replace(/[_-]/g, ' ')}</span>}
+            </div>
 
             {/* Title */}
             <h1 className="text-2xl md:text-4xl font-bold text-[#111] mb-3 md:mb-4 leading-tight">
@@ -219,21 +220,21 @@ export default function ProductDetailPage({ product, onBack, onProductClick }: P
             )}
 
             {/* Fabric Details */}
-            <div className="border-t border-black/10 pt-6 mb-6">
+            {(product.fabricDetails || product.gsmRating) && <div className="border-t border-black/10 pt-6 mb-6">
               <h3 className="text-xs font-bold text-[#111] uppercase tracking-wider mb-3">
                 Material & Care
               </h3>
               <div className="space-y-2">
-                <p className="text-sm text-[#6E6E73]">
+                {product.fabricDetails && <p className="text-sm text-[#6E6E73]">
                   <span className="font-semibold text-[#111]">Fabric:</span> {product.fabricDetails}
-                </p>
+                </p>}
                 {product.gsmRating && (
                   <p className="text-sm text-[#6E6E73]">
                     <span className="font-semibold text-[#111]">Weight:</span> {product.gsmRating}
                   </p>
                 )}
               </div>
-            </div>
+            </div>}
 
             {/* Size Selector */}
             {requiresSize && <div className="mb-6">
