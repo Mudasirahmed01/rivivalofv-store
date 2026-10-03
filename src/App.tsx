@@ -35,15 +35,16 @@ import ShirtsPage from "./components/ShirtsPage";
 import PantsPage from "./components/PantsPage";
 import PerfumesPage from "./components/PerfumesPage";
 import ResetPasswordPage from "./components/ResetPasswordPage";
+import NotFoundPage from "./components/NotFoundPage";
 import SmoothScroll from "./components/SmoothScroll";
 import { Product } from "./types";
 import { getProductPath, getProductSlugFromUrl } from "./lib/shareUtils";
 import BackendService from "./lib/backend";
 import { getStorefrontVisibility, isStorefrontCategoryVisible, StorefrontVisibility } from "./lib/storefrontVisibility";
 
-type StorePage = "home" | "account" | "all-products" | "product-detail" | "checkout" | "wishlist" | "shipping" | "terms" | "privacy" | "contact" | "auth" | "reset-password" | "new-releases" | "best-sellers" | "shirts" | "pants" | "perfumes";
+type StorePage = "home" | "account" | "all-products" | "product-detail" | "product-not-found" | "checkout" | "wishlist" | "shipping" | "terms" | "privacy" | "contact" | "auth" | "reset-password" | "new-releases" | "best-sellers" | "shirts" | "pants" | "perfumes";
 
-const storePages: StorePage[] = ["home", "account", "all-products", "checkout", "wishlist", "shipping", "terms", "privacy", "contact", "auth", "reset-password", "new-releases", "best-sellers", "shirts", "pants", "perfumes"];
+const storePages: StorePage[] = ["home", "account", "all-products", "product-not-found", "checkout", "wishlist", "shipping", "terms", "privacy", "contact", "auth", "reset-password", "new-releases", "best-sellers", "shirts", "pants", "perfumes"];
 
 const getPageFromUrl = (): StorePage => {
   if (new URLSearchParams(window.location.search).get('auth') === 'reset-password') return 'reset-password';
@@ -80,10 +81,12 @@ export default function App() {
             setSelectedProduct(product);
             setCurrentPage("product-detail");
             window.scrollTo({ top: 0, behavior: "smooth" });
-          } else if (product) {
+          } else {
             setSelectedProduct(null);
-            setCurrentPage("home");
-            window.history.replaceState(null, "", window.location.pathname + window.location.search);
+            setCurrentPage(product ? "home" : "product-not-found");
+            if (product) {
+              window.history.replaceState(null, "", window.location.pathname + window.location.search);
+            }
           }
           return;
         }
@@ -125,10 +128,19 @@ export default function App() {
       || (page === 'new-releases' && storefrontVisibility.disabledSections.includes('new-releases'))
       || (page === 'all-products' && requestedCategory && !isStorefrontCategoryVisible(requestedCategory, storefrontVisibility));
     const targetPage = pageDisabled ? 'home' : page;
-    const nextUrl = targetPage === "home"
-      ? `/${window.location.search}`
-      : `/#page/${targetPage}${category && !pageDisabled ? `?category=${encodeURIComponent(category)}` : ''}`;
-    window.history.pushState(null, "", nextUrl);
+
+    if (targetPage === 'home') {
+      window.history.pushState(null, '', '/');
+      setCurrentPage('home');
+      setSelectedProduct(null);
+      return;
+    }
+
+    const cleanPath = targetPage === 'all-products'
+      ? `/all-products${category && !pageDisabled ? `?category=${encodeURIComponent(category)}` : ''}`
+      : `/${targetPage}`;
+
+    window.history.pushState(null, '', cleanPath);
     setCurrentPage(targetPage);
     setSelectedProduct(null);
   };
@@ -224,6 +236,10 @@ export default function App() {
           onBack={handleBackToHome}
           onProductClick={handleProductClick}
         />
+      )}
+
+      {currentPage === "product-not-found" && (
+        <NotFoundPage onBack={handleBackToHome} />
       )}
 
       {currentPage === "checkout" && !storefrontVisibility.disabledPages.includes('checkout') && (

@@ -23,10 +23,10 @@ export default function NotFoundPage({ onBack }: NotFoundPageProps) {
           404
         </motion.div>
         <h1 className="text-2xl md:text-3xl font-bold text-[#111] mb-3">
-          Page Not Found
+          Product Not Found
         </h1>
         <p className="text-sm md:text-base text-[#6E6E73] mb-8">
-          Sorry, we couldn't find the page you're looking for. It might have been moved or doesn't exist.
+          This product may have been removed, renamed, or the URL is incorrect. Explore other products from home or return to the collection page.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <button
