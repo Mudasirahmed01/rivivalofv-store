@@ -1,14 +1,36 @@
-// Helper function to generate shareable product URL
-export const getProductShareUrl = (productSlug: string): string => {
-  const baseUrl = window.location.origin + window.location.pathname;
-  return `${baseUrl}#product/${productSlug}`;
+const toUrlSegment = (value: string) => value
+  .trim()
+  .toLowerCase()
+  .replace(/[_\s]+/g, '-')
+  .replace(/[^a-z0-9-]+/g, '')
+  .replace(/-+/g, '-')
+  .replace(/^-|-$/g, '');
+
+export const getProductPath = (product: { slug: string; category: string; subcategory?: string }): string => {
+  const category = ({ tops: 'shirts', bottoms: 'pants', perfumes: 'perfume' } as Record<string, string>)[product.category] || product.category;
+  const segments = [category, product.subcategory, product.slug]
+    .filter((segment): segment is string => Boolean(segment))
+    .map((segment) => encodeURIComponent(toUrlSegment(segment)));
+  return `/${segments.join('/')}/`;
 };
 
-// Helper function to parse URL hash and get product slug
+export const getProductShareUrl = (productSlug: string, category?: string, subcategory?: string): string => {
+  const path = category ? getProductPath({ slug: productSlug, category, subcategory }) : `/${encodeURIComponent(productSlug)}/`;
+  return `${window.location.origin}${path}`;
+};
+
+// Support legacy hash links as well as clean category/product paths.
 export const getProductSlugFromUrl = (): string | null => {
   const hash = window.location.hash;
   const match = hash.match(/^#product\/(.+)$/);
-  return match ? match[1] : null;
+  if (match) return decodeURIComponent(match[1]);
+  const segments = window.location.pathname.split('/').filter(Boolean);
+  if (segments.length < 2) return null;
+  try {
+    return decodeURIComponent(segments[segments.length - 1]);
+  } catch {
+    return segments[segments.length - 1];
+  }
 };
 
 // Helper function to clear URL hash

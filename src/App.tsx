@@ -47,6 +47,10 @@ const storePages: StorePage[] = ["home", "account", "all-products", "checkout", 
 
 const getPageFromUrl = (): StorePage => {
   if (new URLSearchParams(window.location.search).get('auth') === 'reset-password') return 'reset-password';
+
+  const pathPage = window.location.pathname.replace(/^\/+|\/+$/g, '').split('/')[0] || '';
+  if (pathPage && storePages.includes(pathPage as StorePage)) return pathPage as StorePage;
+
   const match = window.location.hash.match(/^#page\/([^/?]+)/);
   const page = match?.[1] as StorePage | undefined;
   return page && storePages.includes(page) ? page : "home";
@@ -54,7 +58,8 @@ const getPageFromUrl = (): StorePage => {
 
 const getCollectionCategoryFromUrl = () => {
   const hashQuery = window.location.hash.split('?')[1] || '';
-  return new URLSearchParams(hashQuery).get('category') || 'all';
+  const queryString = hashQuery || window.location.search.replace(/^\?/, '');
+  return new URLSearchParams(queryString).get('category') || 'all';
 };
 
 export default function App() {
