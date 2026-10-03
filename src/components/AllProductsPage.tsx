@@ -18,11 +18,18 @@ export default function AllProductsPage({ initialCategory = "all", onBack, onPro
 
   useEffect(() => setActiveFilter(initialCategory), [initialCategory]);
 
-  const subcategoryParts = activeFilter.startsWith('subcategory:') ? activeFilter.split(':') : [];
-  const selectedCategory = activeFilter.startsWith('category:')
-    ? activeFilter.slice('category:'.length)
-    : subcategoryParts[1];
-  const selectedSubcategory = subcategoryParts[2];
+  const getFilterParts = (value: string) => {
+    if (value.startsWith('subcategory:')) {
+      const [_, category, ...subcategoryParts] = value.split(':');
+      return { category, subcategory: subcategoryParts.join(':') };
+    }
+    if (value.startsWith('category:')) {
+      return { category: value.slice('category:'.length), subcategory: '' };
+    }
+    return { category: value, subcategory: '' };
+  };
+
+  const { category: selectedCategory, subcategory: selectedSubcategory } = getFilterParts(activeFilter);
   const filteredProducts = activeFilter === "all"
     ? products
     : products.filter((product) => product.category === selectedCategory && (!selectedSubcategory || product.subcategory === selectedSubcategory));
@@ -38,10 +45,10 @@ export default function AllProductsPage({ initialCategory = "all", onBack, onPro
   const collectionTitle = activeFilter === "all"
     ? "All Products"
     : selectedSubcategoryLabel || (categoryFilter === "tops"
-    ? "Shirts"
-    : categoryFilter === "bottoms"
-    ? "Pants"
-    : categoryFilter.replace(/[_-]/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase()));
+      ? "Shirts"
+      : categoryFilter === "bottoms"
+      ? "Pants"
+      : categoryFilter.replace(/[_-]/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase()));
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] pt-20 md:pt-28 pb-16 px-4 md:px-6">

@@ -80,7 +80,7 @@ export default function ProductDetailPage({ product, onBack, onProductClick }: P
         <Breadcrumbs
           items={[
             { label: "Home", href: "#" },
-            { label: product.category === "tops" ? "Shirts" : product.category === "bottoms" ? "Pants" : product.category.replace(/[_-]/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase()), href: "#" },
+            { label: product.category === "tops" ? "Shirts" : product.category === "bottoms" ? "Pants" : product.category.replace(/[_-]/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase()), href: `/${product.category === 'perfumes' ? 'perfume' : product.category}/` },
             ...(product.subcategory ? [{ label: product.subcategory.replace(/[_-]/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase()), href: "#" }] : []),
             { label: product.title },
           ]}
@@ -379,6 +379,8 @@ export default function ProductDetailPage({ product, onBack, onProductClick }: P
         onClose={() => setShareModalOpen(false)}
         productTitle={product.title}
         productSlug={product.slug}
+        productCategory={product.category}
+        productSubcategory={product.subcategory}
         productPrice={product.price}
       />
 

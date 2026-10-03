@@ -37,7 +37,7 @@ import PerfumesPage from "./components/PerfumesPage";
 import ResetPasswordPage from "./components/ResetPasswordPage";
 import SmoothScroll from "./components/SmoothScroll";
 import { Product } from "./types";
-import { getProductSlugFromUrl } from "./lib/shareUtils";
+import { getProductPath, getProductSlugFromUrl } from "./lib/shareUtils";
 import BackendService from "./lib/backend";
 import { getStorefrontVisibility, isStorefrontCategoryVisible, StorefrontVisibility } from "./lib/storefrontVisibility";
 
@@ -121,8 +121,8 @@ export default function App() {
       || (page === 'all-products' && requestedCategory && !isStorefrontCategoryVisible(requestedCategory, storefrontVisibility));
     const targetPage = pageDisabled ? 'home' : page;
     const nextUrl = targetPage === "home"
-      ? window.location.pathname + window.location.search
-      : `#page/${targetPage}${category && !pageDisabled ? `?category=${encodeURIComponent(category)}` : ''}`;
+      ? `/${window.location.search}`
+      : `/#page/${targetPage}${category && !pageDisabled ? `?category=${encodeURIComponent(category)}` : ''}`;
     window.history.pushState(null, "", nextUrl);
     setCurrentPage(targetPage);
     setSelectedProduct(null);
@@ -149,7 +149,7 @@ export default function App() {
 
   const handleProductClick = (product: Product) => {
     if (storefrontVisibility.disabledPages.includes('product-detail') || !isStorefrontCategoryVisible(product.category, storefrontVisibility)) return;
-    window.history.pushState(null, "", `#product/${product.slug}`);
+    window.history.pushState(null, "", getProductPath(product));
     setSelectedProduct(product);
     setCurrentPage("product-detail");
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -180,6 +180,7 @@ export default function App() {
           window.scrollTo({ top: 0, behavior: "smooth" });
         }}
         onWishlistClick={handleGoToWishlist}
+        onProductClick={handleProductClick}
         onNavigate={handleHomepageCategoryNavigation}
         disabledCategories={storefrontVisibility.disabledCategories}
         disabledSections={storefrontVisibility.disabledSections}

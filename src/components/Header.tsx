@@ -7,10 +7,12 @@ import AdvancedSearch from "./AdvancedSearch";
 import SizeGuide from "./SizeGuide";
 import { Product } from "../types";
 import BackendService from "../lib/backend";
+import { getProductPath } from "../lib/shareUtils";
 
 interface HeaderProps {
   onAccountClick: () => void;
   onWishlistClick: () => void;
+  onProductClick?: (product: Product) => void;
   onNavigate?: (page: string) => void;
   disabledCategories?: string[];
   disabledSections?: string[];
@@ -62,7 +64,7 @@ const addCatalogSubcategories = (items: MenuEntry[], categories: CatalogCategory
   return categoriesDropdown ? [...enriched, categoriesDropdown] : enriched;
 };
 
-export default function Header({ onAccountClick, onWishlistClick, onNavigate, disabledCategories = [], disabledSections = [], disabledPages = [] }: HeaderProps) {
+export default function Header({ onAccountClick, onWishlistClick, onProductClick, onNavigate, disabledCategories = [], disabledSections = [], disabledPages = [] }: HeaderProps) {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
@@ -76,7 +78,8 @@ export default function Header({ onAccountClick, onWishlistClick, onNavigate, di
 
   const handleProductClickFromSearch = (product: Product) => {
     setSearchOpen(false);
-    window.location.hash = `#product/${product.slug}`;
+    if (onProductClick) onProductClick(product);
+    else window.history.pushState(null, '', getProductPath(product));
   };
 
   useEffect(() => {
