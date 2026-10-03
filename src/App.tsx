@@ -109,7 +109,11 @@ export default function App() {
   }, []);
 
   const navigateToPage = (page: StorePage, category?: string) => {
-    const requestedCategory = category?.startsWith('category:') ? category.slice('category:'.length) : category;
+    const requestedCategory = category?.startsWith('category:')
+      ? category.slice('category:'.length)
+      : category?.startsWith('subcategory:')
+        ? category.split(':')[1]
+        : category;
     const pageDisabled = (page === 'shirts' && !isStorefrontCategoryVisible('tops', storefrontVisibility))
       || (page === 'pants' && !isStorefrontCategoryVisible('bottoms', storefrontVisibility))
       || storefrontVisibility.disabledPages.includes(page)
@@ -125,7 +129,7 @@ export default function App() {
   };
 
   const handleHomepageCategoryNavigation = (destination: string) => {
-    if (destination.startsWith('category:')) {
+    if (destination.startsWith('category:') || destination.startsWith('subcategory:')) {
       navigateToPage('all-products', destination);
     } else {
       navigateToPage(destination as StorePage);

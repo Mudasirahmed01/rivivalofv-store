@@ -18,10 +18,14 @@ export default function AllProductsPage({ initialCategory = "all", onBack, onPro
 
   useEffect(() => setActiveFilter(initialCategory), [initialCategory]);
 
-  const filteredProducts =
-    activeFilter === "all"
-      ? products
-      : products.filter((product) => product.category === (activeFilter.startsWith("category:") ? activeFilter.slice("category:".length) : activeFilter));
+  const subcategoryParts = activeFilter.startsWith('subcategory:') ? activeFilter.split(':') : [];
+  const selectedCategory = activeFilter.startsWith('category:')
+    ? activeFilter.slice('category:'.length)
+    : subcategoryParts[1];
+  const selectedSubcategory = subcategoryParts[2];
+  const filteredProducts = activeFilter === "all"
+    ? products
+    : products.filter((product) => product.category === selectedCategory && (!selectedSubcategory || product.subcategory === selectedSubcategory));
   const filterCategories = [
     { label: "All", value: "all" },
     ...[...new Set(products.map((product) => product.category))].map((category) => ({
@@ -29,14 +33,15 @@ export default function AllProductsPage({ initialCategory = "all", onBack, onPro
       value: `category:${category}`,
     })),
   ];
-  const categoryFilter = activeFilter.startsWith("category:") ? activeFilter.slice("category:".length) : activeFilter;
+  const categoryFilter = selectedCategory || activeFilter;
+  const selectedSubcategoryLabel = selectedSubcategory?.replace(/[_-]/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
   const collectionTitle = activeFilter === "all"
     ? "All Products"
-    : categoryFilter === "tops"
+    : selectedSubcategoryLabel || (categoryFilter === "tops"
     ? "Shirts"
     : categoryFilter === "bottoms"
     ? "Pants"
-    : categoryFilter.replace(/[_-]/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+    : categoryFilter.replace(/[_-]/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase()));
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] pt-20 md:pt-28 pb-16 px-4 md:px-6">

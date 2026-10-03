@@ -28,12 +28,39 @@ interface MenuEntry {
 
 const defaultMobileLogo = 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=200&h=200&fit=crop&crop=center';
 
-const defaultMenu = (categories: Array<{ key: string; label: string }>): MenuEntry[] => [
+type CatalogCategory = { key: string; label: string; subcategories?: Array<{ key: string; label: string }> };
+
+const defaultMenu = (categories: CatalogCategory[]): MenuEntry[] => [
   { id: 'nav-home', label: 'HOME', destination: 'home', type: 'link', active: true, children: [] },
   { id: 'nav-new-releases', label: 'NEW RELEASES', destination: 'new-releases', type: 'link', active: true, children: [] },
   { id: 'nav-best-sellers', label: 'BEST SELLERS', destination: 'best-sellers', type: 'link', active: true, children: [] },
-  { id: 'nav-categories', label: 'CATEGORIES', destination: '', type: 'dropdown', active: true, children: categories.map((category) => ({ id: `category-${category.key}`, label: category.label.toUpperCase(), destination: `category:${category.key}`, type: 'link', active: true, children: [] })) },
+  { id: 'nav-categories', label: 'CATEGORIES', destination: '', type: 'dropdown', active: true, children: categories.map((category) => ({ id: `category-${category.key}`, label: category.label.toUpperCase(), destination: `category:${category.key}`, type: 'link' as const, active: true, children: (category.subcategories || []).map((subcategory) => ({ id: `subcategory-${category.key}-${subcategory.key}`, label: subcategory.label, destination: `subcategory:${category.key}:${subcategory.key}`, type: 'link' as const, active: true, children: [] })) })) },
 ];
+
+const addCatalogSubcategories = (items: MenuEntry[], categories: CatalogCategory[]): MenuEntry[] => {
+  const categoryByKey = new Map(categories.map((category) => [category.key, category]));
+  const enrich = (item: MenuEntry): MenuEntry => {
+    const categoryKey = item.destination.startsWith('category:') ? item.destination.slice('category:'.length) : '';
+    const category = categoryByKey.get(categoryKey);
+    const savedChildren = item.children || [];
+    const subcategoryChildren = (category?.subcategories || []).map((subcategory) => ({
+      id: `subcategory-${categoryKey}-${subcategory.key}`,
+      label: subcategory.label,
+      destination: `subcategory:${categoryKey}:${subcategory.key}`,
+      type: 'link' as const,
+      active: true,
+      children: [],
+    }));
+    const childrenByDestination = new Map(savedChildren.map((child) => [child.destination, child]));
+    subcategoryChildren.forEach((child) => childrenByDestination.set(child.destination, child));
+    return { ...item, children: [...childrenByDestination.values()].map(enrich) };
+  };
+  const enriched = items.map(enrich);
+  const hasCategoryDropdown = enriched.some((item) => item.type === 'dropdown' && item.children.some((child) => child.destination.startsWith('category:')));
+  if (hasCategoryDropdown) return enriched;
+  const categoriesDropdown = defaultMenu(categories).find((item) => item.id === 'nav-categories');
+  return categoriesDropdown ? [...enriched, categoriesDropdown] : enriched;
+};
 
 export default function Header({ onAccountClick, onWishlistClick, onNavigate, disabledCategories = [], disabledSections = [], disabledPages = [] }: HeaderProps) {
   const [scrolled, setScrolled] = useState(false);
@@ -67,9 +94,14 @@ export default function Header({ onAccountClick, onWishlistClick, onNavigate, di
         || (typeof settings.header_logo === 'string' ? settings.header_logo : '')
         || defaultMobileLogo;
       setMobileHeaderLogo(savedMobileLogo);
-      setMenuItems(Array.isArray(settings.storefront_navigation?.items)
+      const categoriesWithSubcategories = activeCategories.map((category: CatalogCategory) => ({
+        ...category,
+        subcategories: Array.isArray(category.subcategories) ? category.subcategories : [],
+      }));
+      const savedItems = Array.isArray(settings.storefront_navigation?.items)
         ? settings.storefront_navigation.items
-        : defaultMenu(activeCategories));
+        : defaultMenu(categoriesWithSubcategories);
+      setMenuItems(addCatalogSubcategories(savedItems, categoriesWithSubcategories));
     });
   }, []);
 
@@ -89,6 +121,10 @@ export default function Header({ onAccountClick, onWishlistClick, onNavigate, di
     if (destination.startsWith('category:')) {
       const category = destination.slice('category:'.length);
       return !disabledPages.includes('all-products') && !disabledCategories.includes(category);
+    }
+    if (destination.startsWith('subcategory:')) {
+      const category = destination.split(':')[1];
+      return Boolean(category) && !disabledPages.includes('all-products') && !disabledCategories.includes(category);
     }
     return true;
   };
@@ -253,7 +289,10 @@ export default function Header({ onAccountClick, onWishlistClick, onNavigate, di
                       </button>
                       <AnimatePresence initial={false}>
                         {openDropdownId === item.id && <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="flex flex-col gap-3 overflow-hidden pl-4 pt-3 md:pl-8">
-                          {item.children.filter((child) => child.active && isDestinationVisible(child.destination)).map((child) => <button key={child.id} type="button" onClick={() => handleNavClick(child.destination)} className="w-fit text-left text-sm font-semibold text-[#6E6E73] transition-colors hover:text-black md:text-lg">{child.label}</button>)}
+                          {item.children.filter((child) => child.active && (isDestinationVisible(child.destination) || child.children.some((nested) => nested.active && isDestinationVisible(nested.destination)))).map((child) => <div key={child.id} className="flex flex-col gap-2">
+                            {child.type === 'dropdown' ? <p className="text-sm font-bold text-[#111] md:text-lg">{child.label}</p> : <button type="button" onClick={() => handleNavClick(child.destination)} className="w-fit text-left text-sm font-semibold text-[#6E6E73] transition-colors hover:text-black md:text-lg">{child.label}</button>}
+                            {child.children.filter((nested) => nested.active && isDestinationVisible(nested.destination)).map((nested) => <button key={nested.id} type="button" onClick={() => handleNavClick(nested.destination)} className="ml-4 w-fit text-left text-xs text-[#777] transition-colors hover:text-black md:text-base">{nested.label}</button>)}
+                          </div>)}
                         </motion.div>}
                       </AnimatePresence>
                     </div>
