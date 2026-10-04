@@ -49,8 +49,13 @@ const storePages: StorePage[] = ["home", "account", "all-products", "product-not
 const getPageFromUrl = (): StorePage => {
   if (new URLSearchParams(window.location.search).get('auth') === 'reset-password') return 'reset-password';
 
-  const pathPage = window.location.pathname.replace(/^\/+|\/+$/g, '').split('/')[0] || '';
-  if (pathPage && storePages.includes(pathPage as StorePage)) return pathPage as StorePage;
+  const pathname = window.location.pathname.replace(/^\/+|\/+$/g, '');
+  const pathSegments = pathname.split('/').filter(Boolean);
+  const pageFromPath = pathSegments[0];
+
+  if (pageFromPath === 'all-products') return 'all-products';
+  if (['shirts', 'pants', 'perfume', 'tops', 'bottoms', 'perfumes'].includes(pageFromPath)) return 'all-products';
+  if (pageFromPath && storePages.includes(pageFromPath as StorePage)) return pageFromPath as StorePage;
 
   const match = window.location.hash.match(/^#page\/([^/?]+)/);
   const page = match?.[1] as StorePage | undefined;
@@ -58,9 +63,23 @@ const getPageFromUrl = (): StorePage => {
 };
 
 const getCollectionCategoryFromUrl = () => {
+  const normalizedPath = window.location.pathname.replace(/^\/+|\/+$/g, '');
+  const pathSegments = normalizedPath.split('/').filter(Boolean);
+
+  if (pathSegments[0] && ['shirts', 'pants', 'perfume', 'tops', 'bottoms', 'perfumes'].includes(pathSegments[0])) {
+    const categoryKey = pathSegments[0] === 'shirts' ? 'tops' : pathSegments[0] === 'pants' ? 'bottoms' : pathSegments[0] === 'perfumes' ? 'perfume' : pathSegments[0];
+    const subcategory = pathSegments[1];
+    return subcategory ? `subcategory:${categoryKey}:${subcategory}` : `category:${categoryKey}`;
+  }
+
   const hashQuery = window.location.hash.split('?')[1] || '';
   const queryString = hashQuery || window.location.search.replace(/^\?/, '');
-  return new URLSearchParams(queryString).get('category') || 'all';
+  const category = new URLSearchParams(queryString).get('category') || 'all';
+  if (category.startsWith('subcategory:')) {
+    const [, parentCategory, ...subcategoryParts] = category.split(':');
+    return `subcategory:${parentCategory}:${subcategoryParts.join(':')}`;
+  }
+  return category;
 };
 
 export default function App() {
@@ -136,10 +155,22 @@ export default function App() {
       return;
     }
 
-    const cleanPath = targetPage === 'all-products'
-      ? `/all-products${category && !pageDisabled ? `?category=${encodeURIComponent(category)}` : ''}`
-      : `/${targetPage}`;
+    if (page === 'all-products' && category) {
+      const pathCategory = category.startsWith('subcategory:')
+        ? category.split(':')[1]
+        : category.startsWith('category:')
+          ? category.slice('category:'.length)
+          : category;
+      const normalizedCategory = pathCategory === 'tops' ? 'shirts' : pathCategory === 'bottoms' ? 'pants' : pathCategory === 'perfume' ? 'perfume' : pathCategory;
+      const subcategory = category.startsWith('subcategory:') ? category.split(':').slice(2).join(':') : '';
+      const cleanPath = subcategory ? `/${normalizedCategory}/${subcategory}` : `/${normalizedCategory}`;
+      window.history.pushState(null, '', cleanPath);
+      setCurrentPage('all-products');
+      setSelectedProduct(null);
+      return;
+    }
 
+    const cleanPath = `/${targetPage}`;
     window.history.pushState(null, '', cleanPath);
     setCurrentPage(targetPage);
     setSelectedProduct(null);
